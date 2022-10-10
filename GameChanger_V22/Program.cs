@@ -1,3 +1,4 @@
+using GameChanger_V22.Services;
 using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,5 +29,6 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 //app.UseAuthorization();
 
 //app.MapControllers();
-
+RedisManager.Init(builder.Configuration.GetSection("DBConnection")["Redis"]);
+DBManager.Init(builder.Configuration.GetSection("DBConnection")["MySqlGame"]);
 app.Run();

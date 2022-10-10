@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="CloudStructures" Version="3.2.0" />
+        <PackageReference Include="MySqlConnector" Version="2.2.0-beta.1" />
         <PackageReference Include="ZLogger" Version="1.6.2" />
     </ItemGroup>
 
