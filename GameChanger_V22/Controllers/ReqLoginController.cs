@@ -32,7 +32,7 @@ public class ReqLoginController:ControllerBase
         }
         catch (Exception e)
         {
-            response.Result = ErrorCode.NOID;
+            _logger.ZLogWarning("Redis Error!!");
             throw;
         }
 
