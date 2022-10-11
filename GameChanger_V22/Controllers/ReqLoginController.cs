@@ -21,22 +21,43 @@ public class ReqLoginController:ControllerBase
     public async Task<PkLoginResponse> Post(PkLoginRequest request)
     {
         _logger.ZLogInformation($"[Request Login] ID:{request.id}, PW:{request.pw}");
+        //TODO DB에 아이디 있는지 확인
+        //토큰인증 후 없으면 DB에서 아이디 존재유무확인 있으면 비밀번호 맞는지확인 
         var response = new PkLoginResponse();
-        string tokenValue = RedisManager.AuthToken();
         response.Result = ErrorCode.NONE;
-        var idDefaultExpiry = TimeSpan.FromDays(1);
-        try
+        using (var conn=await DBManager.GetDBConnection())
         {
-            var redisId = new RedisString<string>(RedisManager.s_redisConn, request.id, idDefaultExpiry);
-            await redisId.SetAsync(tokenValue);
-        }
-        catch (Exception e)
-        {
-            _logger.ZLogWarning("Redis Error!!");
-            throw;
-        }
+            try
+            {
+                var row = await conn.QuerySingleOrDefaultAsync<UserTable>(
+                    @"select id,pw,nickName,saltValue from user where ID=@ID", new { ID = request.id });
+                if (row == null)
+                {
+                    response.Result = ErrorCode.NOID;
+                    return response;
+                }
 
-        response.Token = tokenValue;
+                var HashPw = DBManager.MakeHashingPassWord(row.saltValue, request.pw);
+
+                if (row.pw == HashPw)
+                {
+                    //토큰 등록
+                    string token = RedisManager.AuthToken();
+                    var idDefaultExpiry = TimeSpan.FromDays(1);
+                    var redisId = new RedisString<string>(RedisManager.s_redisConn, request.id, idDefaultExpiry);
+                    await redisId.SetAsync(token);
+                    response.Token = token;
+                    return response;
+                }
+                   
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        response.Result = ErrorCode.WRONG_PW;
         return response;
     
     }
