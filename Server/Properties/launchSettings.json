@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "GameChanger_V22": {
+    "Server": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": false,

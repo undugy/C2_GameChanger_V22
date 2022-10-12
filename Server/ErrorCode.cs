@@ -1,6 +1,6 @@
 namespace GameChanger_V22;
 
-public enum ErrorCode: Int32
+public enum ErrorCode:Int32
 {
     NONE=0,
     NOID,
