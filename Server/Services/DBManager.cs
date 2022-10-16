@@ -2,7 +2,7 @@
 using MySqlConnector;
 using System.Security.Cryptography;
 using System.Text;
-namespace GameChanger_V22.Services;
+namespace Server.Services;
 
 public class DBManager
 {

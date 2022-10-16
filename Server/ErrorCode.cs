@@ -1,4 +1,4 @@
-namespace GameChanger_V22;
+namespace Server;
 
 public enum ErrorCode:Int32
 {

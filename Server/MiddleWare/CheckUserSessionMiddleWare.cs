@@ -1,10 +1,10 @@
 using System.Text;
 using CloudStructures.Structures;
-using GameChanger_V22.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Server.Services;
 using ZLogger;
-namespace GameChanger_V22.MiddleWare;
+namespace Server.MiddleWare;
 
 public class CheckUserSessionMiddleWare
 {

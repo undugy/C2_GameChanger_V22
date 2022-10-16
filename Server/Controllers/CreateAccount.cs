@@ -1,9 +1,9 @@
 using ZLogger;
 using Dapper;
-using GameChanger_V22.Services;
-
 using Microsoft.AspNetCore.Mvc;
-namespace GameChanger_V22.Controllers;
+using Server.Services;
+
+namespace Server.Controllers;
 
 
 [ApiController]

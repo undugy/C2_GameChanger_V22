@@ -1,11 +1,11 @@
-using GameChanger_V22.Services;
+using Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using ZLogger;
 using Dapper;
 using CloudStructures.Structures;
-using GameChanger_V22;
+using Server;
 
-namespace GameChanger_V22.Controllers;
+namespace Server.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class ReqLoginController:ControllerBase

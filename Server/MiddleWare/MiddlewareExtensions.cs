@@ -1,4 +1,4 @@
-namespace GameChanger_V22.MiddleWare;
+namespace Server.MiddleWare;
 
 public class MiddlewareExtensions
 {

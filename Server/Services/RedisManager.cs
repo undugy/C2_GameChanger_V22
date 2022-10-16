@@ -1,7 +1,7 @@
 using CloudStructures;
 using System.Security.Cryptography;
 using System.Text;
-namespace GameChanger_V22.Services;
+namespace Server.Services;
 public class RedisManager
 {
     public static RedisConnection s_redisConn { get; set; }
