@@ -1,4 +1,8 @@
-﻿namespace Server.Table
+﻿using System.Collections.Generic;
+using System.Linq;
+
+
+namespace Server.Table
 {
     /// <summary>
     /// 테이블 클래스의 실제 뼈대가 되는 클래스

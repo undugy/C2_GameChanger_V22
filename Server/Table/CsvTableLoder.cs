@@ -19,8 +19,8 @@ namespace Server.Table
         public CsvTableLoder()
         {
             regTblMap_ = new Dictionary<string, CsvTableBase>();
-            //Regist("Properties/csv/protocolDefine.csv", new TblProtocolDefine());
-            //Regist("Properties/commonDefine.csv", new TblProtocolDefine());  
+            Regist("Properties/csv/dailyCheckInTable.csv", new TblDailyCheckInTable());
+            //Regist("Properties/csv/itemTable.csv", new TblProtocolDefine());  
         }
 
         /// <summary>
@@ -33,12 +33,14 @@ namespace Server.Table
             if (filepath == null || tbl == null)
             {
                 // 에러
+             
                 return false;
             }
 
             if (regTblMap_.ContainsKey(filepath))
             {
                 // 에러
+                
                 return false;
             }
 
@@ -59,11 +61,14 @@ namespace Server.Table
             {
                 foreach (var pair in regTblMap_)
                 {
+                   
                     TextReader readFile = new StreamReader(pair.Key);
                     var pharse = new CsvParser(readFile,CultureInfo.InvariantCulture);
+                    
                     var csv = new CsvReader(pharse);
                     if (csv == null)
                     {
+                        
                         //throw new CustomException("failed to make CsvReader.");
                     }
                     currentPos = pair.Key;

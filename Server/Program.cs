@@ -1,8 +1,15 @@
 using Server.Services;
+using Server.Table;
+using Server.Table.CsvImpl;
 using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+
+CsvTableLoder.GetInstance.Load();
+
+
 
 builder.Host.ConfigureLogging(logging =>
 {

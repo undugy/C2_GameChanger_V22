@@ -8,6 +8,7 @@ public class TblDailyCheckInTable:CsvTableBase
     public string ItemName;
     public int Quantity;
 
+     
     public override string ToString()
     {
         return "DailyCheckInTable";
@@ -18,15 +19,17 @@ public class TblDailyCheckInTable:CsvTableBase
         return Execute(obj, () =>
         {
             Int32 idx = 0;
-            var day = obj.GetField<int>(idx++);
+            var day = obj.GetField<Int16>(idx++);
             var itemName = obj.GetField<string>(idx++);
             var quantity = obj.GetField<int>(idx++);
-            if (itemName == null) return false;
-            TableMap<int, TblDailyCheckInTable>.GetInstance.InsertRow(Day, new TblDailyCheckInTable()
+            //if (itemName == null) return false;
+           bool result= TableMap<int, TblDailyCheckInTable>.GetInstance.InsertRow(day, new TblDailyCheckInTable()
             {
+                Day=day,
                 ItemName = itemName,
                 Quantity = quantity
             });
+           
             return true;
         });
     }
@@ -36,14 +39,14 @@ public class TblDailyCheckInTable:CsvTableBase
         get { return TableMap<int, TblDailyCheckInTable>.GetInstance; }
     }
     
-    public static (string ,int) Get(int day)
+    public static TblDailyCheckInTable Get(int day)
     {
         var row = Instance.Get(day);
         if (row != null)
         {
-            return (row.ItemName,row.Quantity);
+            return row;
         }
-        return ("",0);
+        return null;
     }
 }
 
