@@ -19,7 +19,7 @@ namespace Server.Table
         public CsvTableLoder()
         {
             regTblMap_ = new Dictionary<string, CsvTableBase>();
-            Regist("Properties/csv/dailyCheckInTable.csv", new TblDailyCheckInTable());
+            Regist("Properties/csv/dailyCheckInTable.csv", new TblDailyCheckIn());
             //Regist("Properties/csv/itemTable.csv", new TblProtocolDefine());  
         }
 

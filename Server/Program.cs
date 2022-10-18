@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Server.Services;
 using Server.Table;
 using Server.Table.CsvImpl;
@@ -6,8 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-
-CsvTableLoder.GetInstance.Load();
 
 
 
@@ -20,6 +19,8 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddZLoggerRollingFile((dt, x) =>
         $"logs/{dt.ToLocalTime():yyyy-MM-dd}_{x:000}.log", x => x.ToLocalTime().Date, 1024);
 });
+MemcacheManager.Init();
+CsvTableLoder.GetInstance.Load();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

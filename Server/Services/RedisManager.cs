@@ -7,6 +7,8 @@ public class RedisManager
     public static RedisConnection s_redisConn { get; set; }
     private const string _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
 
+
+   
     public static void Init(String address)
     {
         
