@@ -6,7 +6,7 @@ public class TblTeam:CsvTableBase
 {
     public Int32 Id;
     public string Location;
-    
+    public string Korea;
      
     public override string ToString()
     {
@@ -23,10 +23,12 @@ public class TblTeam:CsvTableBase
             var name = obj.GetField<string>(idx++);
             var id = obj.GetField<Int32>(idx++);
             var location = obj.GetField<string>(idx++);
+            var korea = obj.GetField<string>(idx++);
             bool result= tblDictionary.TryAdd(name, new TblTeam
             {
                 Id = id,
-                Location = location
+                Location = location,
+                Korea=korea
             });
             return true;
         });

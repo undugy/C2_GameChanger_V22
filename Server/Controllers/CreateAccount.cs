@@ -30,16 +30,16 @@ public class CreateAccount:Controller
             using (var conn=await DBManager.GetDBConnection())
             {
                 var row = await conn.ExecuteAsync(
-                    @"INSERT user(id,pw,nickName,saltValue) Values(@id,@pw,@nickName,@salt) ",
+                    @"INSERT user(id,pw,saltValue) Values(@id,@pw,@salt) ",
                     new
                     {
                         id=request.ID,
                         pw=hashedPw,
-                        nickName=request.NickName,
                         salt=saltValue
                     });
                 if (row != 1)
                 {
+                    //TODO 외래키 위반으로 안들어오기 때문에 아이디 검사 필요
                     response.Result = ErrorCode.ALREADY_EXIST;
                 }
             }
@@ -59,7 +59,7 @@ public class PkCreateAccountRequest
 {
     public string ID { get; set; }
     public string PW { get; set; }
-    public string NickName { get; set; }
+  
 }
 
 public class PkCreateAccountResponse
