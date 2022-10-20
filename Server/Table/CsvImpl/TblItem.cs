@@ -36,11 +36,11 @@ public class TblItem:CsvTableBase
     public static TblItem? Get(string name)
     {
         var row = MemcacheManager.Get<Dictionary<string, TblItem>>("ItemTable");
-        TblItem tblItme;
+        TblItem tblItem;
         if (row != null)
         {
-            row.TryGetValue(name,out tblItme);
-            return tblItme;
+            row.TryGetValue(name,out tblItem);
+            return tblItem;
         }
         return null;
     }

@@ -30,7 +30,7 @@ public class ReqLoginController:ControllerBase
             try
             {
                 var row = await conn.QuerySingleOrDefaultAsync<UserTable>(
-                    @"select id,pw,nickName,saltValue from user where ID=@ID", new { ID = request.id });
+                    @"select id,pw,saltValue from user where ID=@ID", new { ID = request.id });
                 if (row == null)
                 {
                     response.Result = ErrorCode.NOID;
@@ -80,6 +80,5 @@ public class UserTable
 {
     public string id { get; set; }
     public string pw { get; set; }
-    public string nickName { get; set; }
     public string saltValue { get; set; }
 }

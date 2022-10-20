@@ -20,6 +20,9 @@ namespace Server.Table
         {
             regTblMap_ = new Dictionary<string, CsvTableBase>();
             Regist("Properties/csv/dailyCheckInTable.csv", new TblDailyCheckIn());
+            Regist("Properties/csv/itemTable.csv", new TblItem());
+            Regist("Properties/csv/leagueTable.csv", new TblLeague());
+            Regist("Properties/csv/teamTable.csv", new TblTeam());
             //Regist("Properties/csv/itemTable.csv", new TblProtocolDefine());  
         }
 

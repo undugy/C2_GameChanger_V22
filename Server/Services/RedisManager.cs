@@ -22,7 +22,7 @@ public class RedisManager
          _redisConn = new RedisConnection(config,converter);
         
     }
-    public static async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey,T value)where T:class
+    public static async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
     {
         var redisId = new RedisDictionary<string,T>(RedisManager.GetConnection(),key,null);
         return await redisId.GetAsync(subKey);
