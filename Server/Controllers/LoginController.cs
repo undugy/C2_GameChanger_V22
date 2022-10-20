@@ -44,7 +44,7 @@ public class ReqLoginController:ControllerBase
                     //토큰 등록
                     string token = RedisManager.AuthToken();
                     var idDefaultExpiry = TimeSpan.FromDays(1);
-                    var redisId = new RedisString<string>(RedisManager.s_redisConn, request.id, idDefaultExpiry);
+                    var redisId = new RedisString<string>(RedisManager.GetConnection(), request.id, idDefaultExpiry);
                     await redisId.SetAsync(token);
                     response.Token = token;
                     return response;

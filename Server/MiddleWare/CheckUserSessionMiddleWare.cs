@@ -38,8 +38,7 @@ public class CheckUserSessionMiddleWare
                 return;
             }
             //TODO Redis 인증확인
-            var result = new RedisString<string>(RedisManager.GetConnection(), userID, null);
-            var RedisToken = await result.GetAsync();
+            var RedisToken = await RedisManager.GetStringValue<string>(userID);
             if (RedisToken.ToString() != accessToken)
             {
                 _logger.ZLogInformation($"{accessToken} token and {RedisToken.ToString()} is not matched");

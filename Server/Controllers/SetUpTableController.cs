@@ -27,6 +27,15 @@ public class SetUpTableController:ControllerBase
         return response;
     }
 
+    [HttpPost]
+    [Route("InitializeTeam")]
+    public async Task<PkInitializeTeamResponse>InitializeTeam(PkInitializeTeamRequest req)
+    {
+        PkInitializeTeamResponse response = new PkInitializeTeamResponse();
+        
+    
+        return response;
+    }
 }
 
 public class PkSetUpRequest
@@ -34,8 +43,17 @@ public class PkSetUpRequest
     public string ID;
     public string Token;
 }
-
+public class PkInitializeTeamRequest
+{
+    public string ID;
+    public string Token;
+    public string TeamName;
+}
+public class PkInitializeTeamResponse
+{
+    public ErrorCode Result;
+}
 public class PkSetUpResponse
 {
-    public Dictionary<string, object> Res;
+    public Dictionary<string, object> Res=new Dictionary<string, object>();
 }
