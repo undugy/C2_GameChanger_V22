@@ -6,14 +6,16 @@ namespace Server.Model.User;
 
 public class UserInfo: IUserData
 {
-    public string id;
-    public string pw;
-    public string saltValue;
+    public string id { get; set; }
+    public string pw { get; set; }
+    public string saltValue { get; set; }
     public override string ToString()
     {
         return "User";
     }
 
+    
+    
 
     public async Task<ErrorCode> InsertUserInfo()
     {
@@ -41,6 +43,7 @@ public class UserInfo: IUserData
 
         return ErrorCode.NONE;
     }
+    
     
     public async Task<bool> SaveDataToDB()
     {
@@ -73,5 +76,24 @@ public class UserInfo: IUserData
         return result;
     }
 
+    public static async Task<UserInfo> SelectQueryOrDefaultAsync(string userId)
+    {
+        UserInfo? userInfo=null;
+        try
+        {
+            using (var conn = await DBManager.GetDBConnection())
+            {
+               userInfo=await conn.QuerySingleOrDefaultAsync<UserInfo>("SELECT * FROM user_info WHERE id=@ID",
+                    new { ID = userId });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return userInfo;
+        }
+
+        return userInfo;
+    }
     
 }

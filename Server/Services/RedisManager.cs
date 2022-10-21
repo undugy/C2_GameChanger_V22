@@ -18,13 +18,13 @@ public class RedisManager
     {
         
          var config = new RedisConfig("basic", address);
-         var converter = new CloudStructures.Converters.MessagePackConverter();
-         _redisConn = new RedisConnection(config,converter);
+         _redisConn = new RedisConnection(config);
         
     }
     public static async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
     {
         var redisId = new RedisDictionary<string,T>(RedisManager.GetConnection(),key,null);
+        
         return await redisId.GetAsync(subKey);
     }
     public static async Task<RedisResult<T>> GetStringValue<T>(string key)

@@ -1,6 +1,7 @@
 using ZLogger;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Server.Model.User;
 using Server.Services;
 
 namespace Server.Controllers;
@@ -22,9 +23,15 @@ public class CreateAccount:Controller
         var response = new PkCreateAccountResponse();
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
         response.Result = ErrorCode.NONE;
-        
-        
+        User user = new User(request.ID);
+        var result= await user.CreateUser(request.PW);
+        if (!result)
+        {
+            response.Result = ErrorCode.CREATE_FAIL;
+            return response;
+        }
 
+        await user.UpdateUserDatas();
         return response;
     }
 }
