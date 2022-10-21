@@ -10,9 +10,6 @@ public class UserTeam:IUserData
     public string  userId;
     public string? nickName;
     public string  intro;
-    public string  teamName;
-    public Int32   teamLevel;
-    public Int32   exp;
     public Int32   leagueId;
 
     public override string ToString()
@@ -27,10 +24,10 @@ public class UserTeam:IUserData
         {
             using (var conn = await DBManager.GetDBConnection())
             {
-                const string query = "SELECT COUNT(*) FROM user_team WHERE teamName=@TeamName";
+                const string query = "SELECT COUNT(*) FROM user_team WHERE id=@ID";
                 result = await conn.ExecuteScalarAsync<Int64>(query,new
                 {
-                    TeamName=teamName
+                    ID=id
                 });
                 
             }
@@ -50,14 +47,13 @@ public class UserTeam:IUserData
         {
             using (var conn = await DBManager.GetDBConnection())
             {
-                const string query = "INSERT INTO user_team(id,userId,nickName,teamName) " +
-                                     "VALUES(@ID,@UserId,@NickName,@TeamName)";
+                const string query = "INSERT INTO user_team(id,userId,nickName) " +
+                                     "VALUES(@ID,@UserId,@NickName)";
                 result = await conn.ExecuteAsync(query,new
                 {
                     ID=id,
                     UserId=userId,
-                    NickName=nickName,
-                    TeamName=teamName
+                    NickName=nickName
                 });
                 
             }
@@ -78,16 +74,20 @@ public class UserTeam:IUserData
             using (var conn = await DBManager.GetDBConnection())
             {
                 const string query = "UPDATE user_team " +
-                                     "SET id=@id," +
-                                     "userId=@userId," +
-                                     "nickName=@nickName," +
-                                     "intro=@intro," +
-                                     "teamName=@teamName," +
-                                     "teamLevel=@teamLevel," +
-                                     "exp=@exp," +
-                                     "leagueId=@leagueId " +
-                                     "WHERE userId=@userId";
-                result = await conn.ExecuteAsync(query);
+                                     "SET id=@Id," +
+                                     "userId=@UserId," +
+                                     "nickName=@NickName," +
+                                     "intro=@Intro," +
+                                     "leagueId=@LeagueId " +
+                                     "WHERE userId=@UserId";
+                result = await conn.ExecuteAsync(query,new
+                {
+                    Id=id,
+                    UserId=userId,
+                    NickName=nickName,
+                    Intro=intro,
+                    LeagueId=leagueId
+                });
                 
             }
         }
@@ -108,9 +108,6 @@ public class UserTeam:IUserData
             userId=userId,
             nickName=nickName,
             intro=intro,
-            teamName=teamName,
-            teamLevel=teamLevel,
-            exp=exp,
             leagueId=leagueId
         });
         return result;

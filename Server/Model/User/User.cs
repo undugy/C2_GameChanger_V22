@@ -17,7 +17,7 @@ public class User
     public async Task<bool> CreateUser(string pw)
     {
         //TODO 여기서 레디스랑 DB조사
-        var userInfo = GetRedisData<UserInfo>();//new UserInfo(){id=id,pw=pw};
+        var userInfo = await GetRedisData<UserInfo>();//new UserInfo(){id=id,pw=pw};
         if (userInfo != null)
         {
             return false;
@@ -41,6 +41,10 @@ public class User
     private async Task<T> GetRedisData<T>()
     {
         var result = await RedisManager.GetHashValue<T>(_id, nameof(T));
+        if (result.GetValueOrNull() == null)
+        {
+            return default(T);
+        }
         return result.Value;
     }
 

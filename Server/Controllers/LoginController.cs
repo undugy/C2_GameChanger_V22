@@ -62,10 +62,3 @@ public class PkLoginResponse
     public string Token { get; set; }
     public ErrorCode Result { get; set; }
 }
-
-public class UserTable
-{
-    public string id { get; set; }
-    public string pw { get; set; }
-    public string saltValue { get; set; }
-}

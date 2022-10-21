@@ -9,6 +9,12 @@ public class UserInfo: IUserData
     public string id { get; set; }
     public string pw { get; set; }
     public string saltValue { get; set; }
+    
+    public Int32 ball { get; set; }
+    public Int32 point { get; set; }
+    public Int32 star { get; set; }
+    public Int32 exp { get; set; }
+    public Int32 level { get; set; }
     public override string ToString()
     {
         return "User";
@@ -52,8 +58,27 @@ public class UserInfo: IUserData
         {
             using (var conn = await DBManager.GetDBConnection())
             {
-                result = await conn.ExecuteAsync(
-                    @"update user_info set id=@id,pw=@pw,saltValue=@saltValue)");
+                const string query = "UPDATE user_info SET " +
+                                     "id=@ID," +
+                                     "pw=@PW," +
+                                     "saltValue=@SaltValue," +
+                                     "ball=@Ball," +
+                                     "point=@Point," +
+                                     "star=@Star," +
+                                     "exp=@Exp," +
+                                     "level=@Level " +
+                                     "WHERE id=@ID";
+                result = await conn.ExecuteAsync(query,new
+                {
+                    ID=id,
+                    PW=pw,
+                    SaltValue=saltValue,
+                    Ball=ball,
+                    Point=point,
+                    Star=star,
+                    Exp=exp,
+                    Level=level
+                });
                 
             }
         }

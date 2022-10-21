@@ -52,7 +52,6 @@ public class SetUpTableController:ControllerBase
         userTeam.id = tblTeam.Id;
         userTeam.userId = request.ID;
         userTeam.nickName = request.TeamName+Code.ToString();
-        userTeam.teamName = request.TeamName;
         bool result=await userTeam.InsertUserTeam();
         if (result == false)
         {
