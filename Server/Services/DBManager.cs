@@ -24,10 +24,10 @@ public class DBManager
         await connection.OpenAsync();
         return connection;
     }
-    public static string MakeHashingPassWord(string saltvalue, string pw)
+    public static string MakeHashingPassWord(string saltValue, string pw)
     {
         var sha = new SHA256Managed();
-        byte[] hash = sha.ComputeHash(Encoding.ASCII.GetBytes(saltvalue + pw));
+        byte[] hash = sha.ComputeHash(Encoding.ASCII.GetBytes(saltValue + pw));
         StringBuilder stringBuilder = new StringBuilder();
         foreach (byte b in hash)
         {

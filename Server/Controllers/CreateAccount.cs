@@ -23,33 +23,7 @@ public class CreateAccount:Controller
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
         response.Result = ErrorCode.NONE;
         
-        var saltValue = DBManager.SaltString();
-        var hashedPw = DBManager.MakeHashingPassWord(saltValue, request.PW);
-        try
-        {
-            using (var conn=await DBManager.GetDBConnection())
-            {
-                var row = await conn.ExecuteAsync(
-                    @"INSERT user(id,pw,saltValue) Values(@id,@pw,@salt) ",
-                    new
-                    {
-                        id=request.ID,
-                        pw=hashedPw,
-                        salt=saltValue
-                    });
-                if (row != 1)
-                {
-                    //TODO 외래키 위반으로 안들어오기 때문에 아이디 검사 필요
-                    response.Result = ErrorCode.ALREADY_EXIST;
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            response.Result = ErrorCode.CREATE_FAIL;
-            return response;
-        }
+        
 
         return response;
     }

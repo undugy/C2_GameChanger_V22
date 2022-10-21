@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Server;
 using Server.Model;
+using Server.Model.User;
 using Server.Services;
 using Server.Table.CsvImpl;
 

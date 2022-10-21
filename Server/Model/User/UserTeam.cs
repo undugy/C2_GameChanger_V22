@@ -1,8 +1,8 @@
-using CloudStructures;
+using Dapper;
 using Server.Interface;
 using Server.Services;
-using Dapper;
-namespace Server.Model;
+
+namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
