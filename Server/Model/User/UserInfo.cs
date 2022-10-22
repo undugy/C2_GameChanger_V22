@@ -15,9 +15,12 @@ public class UserInfo: IUserData
     public Int32 star { get; set; }
     public Int32 exp { get; set; }
     public Int32 level { get; set; }
+    
+    public DateTime lastBallAddTime { get; set; }
+    public DateTime lastLoginTime { get; set; }
     public override string ToString()
     {
-        return "User";
+        return "user_info";
     }
 
     
@@ -66,7 +69,9 @@ public class UserInfo: IUserData
                                      "point=@Point," +
                                      "star=@Star," +
                                      "exp=@Exp," +
-                                     "level=@Level " +
+                                     "level=@Level," +
+                                     "lastBallAddTime=@ballAddTime,"+
+                                     "lastLoginTime=@LoginTime "+
                                      "WHERE id=@ID";
                 result = await conn.ExecuteAsync(query,new
                 {
@@ -77,7 +82,9 @@ public class UserInfo: IUserData
                     Point=point,
                     Star=star,
                     Exp=exp,
-                    Level=level
+                    Level=level,
+                    ballAddTime=lastBallAddTime,
+                    LoginTime=lastLoginTime
                 });
                 
             }

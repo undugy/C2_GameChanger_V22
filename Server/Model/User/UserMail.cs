@@ -1,0 +1,98 @@
+using Dapper;
+using Server.Interface;
+using Server.Services;
+
+namespace Server.Model.User;
+
+public class UserMail:IUserData
+{
+    public string userId;
+    public int checkDay;
+    public string contentType;
+    public int itemId;
+    public int quantity;
+    public DateTime expiryDate;
+    
+    public async Task<ErrorCode> InsertUserMail()
+    {
+        var result=ErrorCode.NONE;
+        int row = 0;
+        try
+        {
+            using (var conn = await DBManager.GetDBConnection())
+            {
+                const string query = "INSERT INTO user_mail(userId,checkDay,contentType,itemId,quantity,expiryDate) " +
+                                     "VALUES(@UserId,@CheckDay,@ContentType,@ItemId,@Quantity,@ExpiryDate)";
+                row = await conn.ExecuteAsync(query,new
+                {
+                    UserId=userId,
+                    CheckDay=checkDay,
+                    ContentType=contentType,
+                    ItemId=itemId,
+                    Quantity=quantity,
+                    ExpiryDate=expiryDate
+                });
+                
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            result = ErrorCode.CREATE_FAIL;
+        }
+
+        return result;
+    }
+
+    public async Task<bool> SaveDataToDB()
+    {
+        return true;
+    }
+
+    public async Task<bool> SaveDataToRedis()
+    {
+        //TODO hash id 만들어서 넣어주기
+        return true;
+    }
+    
+    public static async Task<UserMail> SelectQueryFirstAsync(string userId,int day,string contentType)
+    {
+        UserMail userMail=null;
+        try
+        {
+            using (var conn = await DBManager.GetDBConnection())
+            {
+                userMail=await conn.QueryFirstAsync<UserMail>("SELECT * FROM user_mail WHERE userId=@ID " +
+                                                              "AND checkDay=@CheckDay "+
+                                                              "AND contentType=@ContentType",new { ID = userId,CheckDay=day,ContentType=contentType });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return userMail;
+        }
+
+        return userMail;
+    }
+    
+    public static async Task<List<UserMail>> SelectQueryAsync(string userId,int day,string contentType)
+    {
+        List<UserMail> mailList = new List<UserMail>();
+        try
+        {
+            using (var conn = await DBManager.GetDBConnection())
+            {
+                var mail =await conn.QueryAsync<UserMail>("SELECT * FROM user_mail WHERE userId=@ID " ,new { ID = userId });
+                mailList.AddRange(mail.ToList());
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+
+        return mailList;
+    }
+}
