@@ -41,24 +41,8 @@ public class SetUpTableController:ControllerBase
         var response = new PkInitializeTeamResponse();
         response.Result = ErrorCode.NONE;
         //var userTeam = await RedisManager.GetHashValue<UserTeam>(req.ID, nameof(UserTeam));
-        var tblTeam = TblTeam.Get(request.TeamName);
-        if (tblTeam == null)
-        {
-            response.Result=ErrorCode.CREATE_FAIL;
-            return response;
-        }
-        UserTeam userTeam = new UserTeam();
-        Int64 Code = await userTeam.CountTeamFromDB(request.TeamName);
-        userTeam.id = tblTeam.Id;
-        userTeam.userId = request.ID;
-        userTeam.nickName = request.TeamName+Code.ToString();
-        bool result=await userTeam.InsertUserTeam();
-        if (result == false)
-        {
-            response.Result=ErrorCode.CREATE_FAIL;
-            return response;
-        }
-        Console.WriteLine(userTeam.nickName);
+        User user = new User(request.ID);
+        response.Result = await user.InitializeTeam(request.TeamName);
         //response.jsonTeam = JsonConvert.SerializeObject(userTeam);
         return response;
     }

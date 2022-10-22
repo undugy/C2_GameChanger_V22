@@ -49,8 +49,8 @@ public class UserInfo: IUserData
 
         return ErrorCode.NONE;
     }
-    
-    
+
+
     public async Task<bool> SaveDataToDB()
     {
         int result = 0;
@@ -120,5 +120,6 @@ public class UserInfo: IUserData
 
         return userInfo;
     }
+
     
 }

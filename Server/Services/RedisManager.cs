@@ -27,6 +27,7 @@ public class RedisManager
         
         return await redisId.GetAsync(subKey);
     }
+    
     public static async Task<RedisResult<T>> GetStringValue<T>(string key)
     {
         var redisId = new RedisString<T>(RedisManager.GetConnection(),key,null);

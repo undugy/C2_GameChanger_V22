@@ -25,9 +25,9 @@ public class CreateAccount:Controller
         response.Result = ErrorCode.NONE;
         User user = new User(request.ID);
         var result= await user.CreateUser(request.PW);
-        if (!result)
+        if (result!=ErrorCode.NONE)
         {
-            response.Result = ErrorCode.CREATE_FAIL;
+            response.Result = result;
             return response;
         }
 

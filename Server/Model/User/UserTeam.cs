@@ -6,11 +6,11 @@ namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
-    public Int32 id;
-    public string  userId;
-    public string? nickName;
-    public string  intro;
-    public Int32   leagueId;
+    public Int32 id { get; set; }
+    public string  userId{ get; set; }
+    public string? nickName{ get; set; }
+    public string  intro{ get; set; }
+    public Int32   leagueId{ get; set; }
 
     public override string ToString()
     {
@@ -40,16 +40,17 @@ public class UserTeam:IUserData
 
         return result;
     }
-    public async Task<bool> InsertUserTeam()
+    public async Task<ErrorCode> InsertUserTeam()
     {
-        int result=0;
+        var result=ErrorCode.NONE;
+        int row = 0;
         try
         {
             using (var conn = await DBManager.GetDBConnection())
             {
                 const string query = "INSERT INTO user_team(id,userId,nickName) " +
                                      "VALUES(@ID,@UserId,@NickName)";
-                result = await conn.ExecuteAsync(query,new
+                row = await conn.ExecuteAsync(query,new
                 {
                     ID=id,
                     UserId=userId,
@@ -61,10 +62,10 @@ public class UserTeam:IUserData
         catch (Exception e)
         {
             Console.WriteLine(e);
-            //throw;
+            result = ErrorCode.CREATE_FAIL;
         }
 
-        return (result == 1);
+        return result;
     }
     public async Task<bool> SaveDataToDB()
     {
@@ -111,5 +112,25 @@ public class UserTeam:IUserData
             leagueId=leagueId
         });
         return result;
+    }
+    
+    public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userId)
+    {
+        UserTeam? userInfo=null;
+        try
+        {
+            using (var conn = await DBManager.GetDBConnection())
+            {
+                userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE id=@ID",
+                    new { ID = userId });
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return userInfo;
+        }
+
+        return userInfo;
     }
 }
