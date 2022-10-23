@@ -11,7 +11,7 @@ public class UserMail:IUserData
     public string contentType;
     public int itemId;
     public int quantity;
-    public DateTime expiryDate;
+    public DateTime receiveDate;
     
     public async Task<ErrorCode> InsertUserMail()
     {
@@ -21,8 +21,8 @@ public class UserMail:IUserData
         {
             using (var conn = await DBManager.GetDBConnection())
             {
-                const string query = "INSERT INTO user_mail(userId,checkDay,contentType,itemId,quantity,expiryDate) " +
-                                     "VALUES(@UserId,@CheckDay,@ContentType,@ItemId,@Quantity,@ExpiryDate)";
+                const string query = "INSERT INTO user_mail(userId,checkDay,contentType,itemId,quantity,receiveDate) " +
+                                     "VALUES(@UserId,@CheckDay,@ContentType,@ItemId,@Quantity,@ReceiveDate)";
                 row = await conn.ExecuteAsync(query,new
                 {
                     UserId=userId,
@@ -30,7 +30,7 @@ public class UserMail:IUserData
                     ContentType=contentType,
                     ItemId=itemId,
                     Quantity=quantity,
-                    ExpiryDate=expiryDate
+                    ReceiveDate=receiveDate
                 });
                 
             }
@@ -76,7 +76,7 @@ public class UserMail:IUserData
         return userMail;
     }
     
-    public static async Task<List<UserMail>> SelectQueryAsync(string userId,int day,string contentType)
+    public static async Task<List<UserMail>> SelectQueryAsync(string userId)
     {
         List<UserMail> mailList = new List<UserMail>();
         try
