@@ -1,3 +1,4 @@
+using CloudStructures.Structures;
 using Server.Interface;
 using Server.Services;
 using Server.Table.CsvImpl;
@@ -8,19 +9,21 @@ public class User
 {
     private readonly string _id;
     private Dictionary<string,IUserData> _userDatas;
-    private List<string> _tableList;
+    //private Dictionary<int,UserBag> _bagList;
+   
     public User(string userId)
     {
         _id = userId;
         _userDatas = new Dictionary<string, IUserData>();
-        _tableList = new List<string>();
+        
     }
 
     
     public async Task<ErrorCode> CreateUser(string pw)
     {
         //TODO 여기서 레디스랑 DB조사
-        var userInfo = await BringTable<UserInfo>();//new UserInfo(){id=id,pw=pw};
+        var userInfo = await BringTable<UserInfo>();//
+        
         var result = ErrorCode.NONE;
         if (userInfo != null)
         {
@@ -34,15 +37,32 @@ public class User
             return result;
         }
         
-        userInfo = GetTable<UserInfo>();
+        userInfo = new UserInfo(){id=_id,pw=pw};;
         userInfo.id = _id;
         userInfo.pw = pw;
         result = await  userInfo.InsertUserInfo();
-
+        await userInfo.SaveDataToRedis();
+     
+        
         return result;
     }
 
     public async Task<bool> SetUpUserData()
+    {
+
+        if (!await GetUserInfo())
+        {
+            return false;
+        }
+        if (!await GetUserTeam())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> GetUserInfo()
     {
         var userInfo = await BringTable<UserInfo>();
         if(userInfo==null)
@@ -52,7 +72,28 @@ public class User
                 return false;
             AddUserData<UserInfo>(userInfo);
         }
-        
+
+        return true;
+    }
+    //private async Task<bool> GetUserBag()
+    //{
+    //    var userbag = await RedisManager.GetListByRange<UserBag>(_id + "bag");
+    //    if(userbag==null)
+    //    {
+    //        userbag=await UserBag.SelectQueryAsync(_id);
+    //        if (userbag == null)
+    //            return false;
+    //        _bagList = userbag.Select((v, i) => (value: v, index: i))
+    //            .ToDictionary(pair => pair.index, pair => pair.value);
+    //    }
+
+    //    return true;
+    //}
+    
+    
+    
+    private async Task<bool> GetUserTeam()
+    {
         var userTeam = await BringTable<UserTeam>();
         if(userTeam==null)
         {
@@ -64,6 +105,7 @@ public class User
 
         return true;
     }
+    
     public async ValueTask<ErrorCode> InitializeTeam(string teamName)
     {
         var tblTeam = TblTeam.Get(teamName);
@@ -82,7 +124,7 @@ public class User
         return result;
     }
     
-    //TODO 
+  
     private async Task<T> GetRedisData<T>()
     {
         var result = await RedisManager.GetHashValue<T>(_id, nameof(T));
@@ -115,7 +157,7 @@ public class User
     
     
     
-     private async ValueTask<T> BringTable<T>()where T:class
+     private async Task<T> BringTable<T>()where T:class
      {
          IUserData? data;
 
@@ -133,7 +175,11 @@ public class User
          return result;
     
      }
-
+     
+     
+     
+     
+     
      public T GetTable<T>() where T:class
      {
          IUserData data;

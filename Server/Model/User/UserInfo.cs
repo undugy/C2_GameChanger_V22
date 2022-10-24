@@ -99,7 +99,7 @@ public class UserInfo: IUserData
     }
     public async Task<bool> SaveDataToRedis()
     {
-        bool result=await RedisManager.SetHashValue<UserInfo>(id, nameof(UserInfo), new UserInfo()
+        bool result=await RedisManager.SetHashValue<string,UserInfo>(id, nameof(UserInfo), new UserInfo()
         {
             id=id,
             pw=pw,

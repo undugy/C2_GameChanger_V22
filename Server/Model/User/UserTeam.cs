@@ -103,7 +103,7 @@ public class UserTeam:IUserData
     
     public async Task<bool> SaveDataToRedis()
     {
-        bool result=await RedisManager.SetHashValue<UserTeam>(userId, nameof(UserTeam), new UserTeam()
+        bool result=await RedisManager.SetHashValue<string,UserTeam>(userId, nameof(UserTeam), new UserTeam()
         {
             id=id,
             userId=userId,
