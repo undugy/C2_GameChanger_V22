@@ -4,7 +4,7 @@ using Server.Services;
 
 namespace Server.Model.User;
 
-public class UserMail:IUserData
+public class UserMail
 {
     public string userId;
     public int checkDay;
@@ -40,7 +40,8 @@ public class UserMail:IUserData
             Console.WriteLine(e);
             result = ErrorCode.CREATE_FAIL;
         }
-
+        
+        
         return result;
     }
 
