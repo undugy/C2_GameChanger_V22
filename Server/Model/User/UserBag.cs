@@ -13,6 +13,9 @@ public class UserBag
     private readonly string _redisMailId;
     private Dictionary<int,BagProduct> _userBag;
     private List<UserMail> _userMails;
+
+    public Dictionary<int,BagProduct>GetUserBag() => _userBag; 
+    public List<UserMail>GetUserMail()=> _userMails;
     public UserBag(string id)
     {
         _id = id;
@@ -36,11 +39,16 @@ public class UserBag
     }
     private async Task<bool>LoadUserBag()
     {
-        if (!await GetBagFromRedis())
-        {
+       if (!await GetBagFromRedis())
+       {
             var result= await BagProduct.SelectQueryAsync(_id);
             if (result == null) return false;
             _userBag = result;
+            foreach (var products in result)
+            {
+                await products.Value.SaveDataToRedis(_redisBagId);
+
+            }
         }
 
         return true;
@@ -55,6 +63,10 @@ public class UserBag
             var result= await UserMail.SelectQueryAsync(_id);
             if (result == null) return false;
             _userMails = result;
+            foreach (var products in result)
+            {
+                
+            }
         }
 
         return true;
@@ -65,7 +77,7 @@ public class UserBag
         
         
         var bagDict = await RedisManager.GetHash<int, BagProduct>(_redisBagId).GetAllAsync();
-        if (bagDict == null)
+        if (bagDict.Count == 0)
             return false;
         _userBag = bagDict;
         return true;

@@ -16,8 +16,11 @@ public class UserInfo: IUserData
     public Int32 exp { get; set; }
     public Int32 level { get; set; }
     
+    
     public DateTime lastBallAddTime { get; set; }
     public DateTime lastLoginTime { get; set; }
+    public Boolean dailyCheck { get; set; }
+    public Int32 checkDay { get; set; }
     public override string ToString()
     {
         return "user_info";
@@ -71,7 +74,9 @@ public class UserInfo: IUserData
                                      "exp=@Exp," +
                                      "level=@Level," +
                                      "lastBallAddTime=@ballAddTime,"+
-                                     "lastLoginTime=@LoginTime "+
+                                     "lastLoginTime=@LoginTime, "+
+                                     "dailyCheck=@DailyCheck,"+
+                                     "checkDay=@CheckDay "+
                                      "WHERE id=@ID";
                 result = await conn.ExecuteAsync(query,new
                 {
@@ -84,7 +89,9 @@ public class UserInfo: IUserData
                     Exp=exp,
                     Level=level,
                     ballAddTime=lastBallAddTime,
-                    LoginTime=lastLoginTime
+                    LoginTime=lastLoginTime,
+                    DailyCheck=dailyCheck,
+                    CheckDay=checkDay
                 });
                 
             }

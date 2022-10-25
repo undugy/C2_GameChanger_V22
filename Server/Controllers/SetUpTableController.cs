@@ -6,6 +6,7 @@ using Server.Model;
 using Server.Model.User;
 using Server.Services;
 using Server.Table.CsvImpl;
+using JsonConverter = System.Text.Json.Serialization.JsonConverter;
 
 namespace Server.Controllers;
 
@@ -31,6 +32,7 @@ public class SetUpTableController:ControllerBase
         // 최종적으로 Response에
         //user_data와 register_result로 결과값 넣어주기
         //후에 필터에서 json으로 컨버팅
+        PkSetUpResponse response = new PkSetUpResponse();
         User user = new User(req.ID);
         UserBag userBag = new UserBag(req.ID);
         if (!await user.LoadUserData())
@@ -48,8 +50,12 @@ public class SetUpTableController:ControllerBase
             throw new Exception("유저세팅 실패");
         }
 
+        var items = JsonConvert.SerializeObject(userBag.GetUserBag());
+        //var mails = JsonConvert.SerializeObject(userBag.GetUserMail());
+        response.Res.Add("UserInfo",user.GetTable<UserInfo>());
+        response.Res.Add("UserBag",items);
+        response.Res.Add("UserMail",userBag.GetUserMail());
         await user.UpdateUserDatas();
-        PkSetUpResponse response = new PkSetUpResponse();
         return response;
     }
 
@@ -83,7 +89,6 @@ public class PkInitializeTeamRequest
 
 public class PkInitializeTeamResponse
 {
-    
     public ErrorCode Result { get; set; }
 }
 public class PkSetUpResponse

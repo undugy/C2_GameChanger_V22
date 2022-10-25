@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Server.Services;
 using Server.Table;
 using Server.Table.CsvImpl;
+using Server.MiddleWare;
 using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,9 @@ builder.Host.ConfigureLogging(logging =>
     logging.AddZLoggerRollingFile((dt, x) =>
         $"logs/{dt.ToLocalTime():yyyy-MM-dd}_{x:000}.log", x => x.ToLocalTime().Date, 1024);
 });
+
+builder.Services.AddControllers().AddMvcOptions(options => options.Filters.Add(typeof(ResultFilter)));
+
 MemcacheManager.Init();
 CsvTableLoder.GetInstance.Load();
 
