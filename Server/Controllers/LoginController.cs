@@ -38,9 +38,11 @@ public class ReqLoginController:ControllerBase
         {
             //토큰 등록
             string token = RedisManager.AuthToken();
+            
             if (await RedisManager.SetStringValue<string>(request.id+"Login", token))
             {
                 response.Token = token;
+                //userInfo.lastLoginTime=DateTime.Now;
                 return response;
             }
         }

@@ -20,9 +20,7 @@ public class BagProduct
             using (var conn = await DBManager.GetDBConnection())
             {
                 const string query = "INSERT INTO user_bag(itemId,userId,quantity,kind) " +
-                                     "VALUES(@ItemId,@UserId,@Quantity,@Kind)" +
-                                     "ON DUPLICATE KEY " +
-                                     "UPDATE itemId=@ItemId,userId=@UserId,quantity=@Quantity,kind=@Kind";
+                                     "VALUES(@ItemId,@UserId,@Quantity,@Kind)";
                 row = await conn.ExecuteAsync(query,new
                 {
                     ItemId=itemId,
@@ -101,7 +99,7 @@ public class BagProduct
     
     public static async Task<Dictionary<int,BagProduct>> SelectQueryAsync(string userId)
     {
-        Dictionary<int,BagProduct> bagList = new Dictionary<int,BagProduct>();
+        Dictionary<int,BagProduct> bagList;
         try
         {
             using (var conn = await DBManager.GetDBConnection())

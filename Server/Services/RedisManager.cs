@@ -42,6 +42,21 @@ public class RedisManager
         return redisId;
     }
     
+    public static async Task<RedisSortedSet<T>>GetSortedSet<T>(string key)
+    {
+        var redisId = new RedisSortedSet<T>(RedisManager.GetConnection(),key,null);
+        await redisId.DeleteAsync();
+        return redisId;
+    }
+    public static async Task<T[]>GetSortedSetRangeByScore<T>(string key,int min,int max)
+    {
+        var redisId = new RedisSortedSet<T>(RedisManager.GetConnection(),key,null);
+        await redisId.DeleteAsync();
+
+        var result= await redisId.RangeByScoreAsync(min, max);
+        
+        return result;
+    }
     public static async Task<RedisResult<T>> GetStringValue<T>(string key)
     {
         var redisId = new RedisString<T>(RedisManager.GetConnection(),key,null);
@@ -60,13 +75,18 @@ public class RedisManager
         var redisId = new RedisDictionary<T_KEY,T>(RedisManager.GetConnection(),key,defaultExpiry);
         return await redisId.SetAsync(subKey, value);
     }
-    public static async Task<long>SetListValue<T>(string key,T value)where T:class
+    public static async Task<long>InsertListValue<T>(string key,T value)where T:class
     {
         var defaultExpiry = TimeSpan.FromDays(1);
         var redisId = new RedisList<T>(RedisManager.GetConnection(),key,defaultExpiry);
         return await redisId.RightPushAsync(value);
     }
     
+    public static async Task<long>SetListValue<T>(string key,T value,TimeSpan?expiry=null)where T:class
+    {
+        var redisId = new RedisList<T>(RedisManager.GetConnection(),key,expiry);
+        return await redisId.RightPushAsync(value);
+    }
     
     public static string AuthToken()
     {

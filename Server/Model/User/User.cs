@@ -1,6 +1,7 @@
 using CloudStructures.Structures;
 using Server.Interface;
 using Server.Services;
+using Server.Table;
 using Server.Table.CsvImpl;
 
 namespace Server.Model.User;
@@ -10,7 +11,7 @@ public class User
     private readonly string _id;
     private Dictionary<string,IUserData> _userDatas;
     //private Dictionary<int,UserBag> _bagList;
-   
+    private RedisBit _checkInLog;
     public User(string userId)
     {
         _id = userId;
@@ -41,13 +42,17 @@ public class User
         userInfo.id = _id;
         userInfo.pw = pw;
         result = await  userInfo.InsertUserInfo();
-        await userInfo.SaveDataToRedis();
+
+        var tblItem = TblItem.Get("NAMECHANGETICKET");
+        var bagProduct = new BagProduct() { itemId = tblItem.Id, userId = _id, kind = "item", quantity = 1 };
+        await bagProduct.InsertOrUpdateBagProduct();
+        //await userInfo.SaveDataToRedis();
      
         
         return result;
     }
 
-    public async Task<bool> SetUpUserData()
+    public async Task<bool> LoadUserData()
     {
 
         if (!await GetUserInfo())
@@ -62,6 +67,53 @@ public class User
         return true;
     }
 
+    public async Task<bool> SetUpUser()
+    {
+        var userInfo = await BringTable<UserInfo>();
+        
+        var userTeam = await BringTable<UserTeam>();
+
+        // TODO CheckUserLogin() 여기서 전날 로그인 했는데 보상 안받았으면 주기
+        if (!UpdateBall())
+        {
+            return false;
+        }
+        userInfo.lastLoginTime = DateTime.Now.ToLocalTime();
+
+        return true;
+    }
+
+    private bool UpdateBall()
+    {
+        var userInfo = GetTable<UserInfo>();
+        var userMaxBall = ConstantValue.BallMax + userInfo.level;
+        if (userInfo.ball >=userMaxBall )
+        {
+            return true;
+        }
+
+        var nowTime = DateTime.Now;
+        //var userTime = nowTime- userInfo.lastLoginTime;
+        var ballAddTime = nowTime.Ticks - userInfo.lastBallAddTime.Ticks;
+        var elapsed = new TimeSpan(ballAddTime);
+        //var result = userTime - ballAddTime;
+        int quo=(int)elapsed.TotalMinutes / 60;
+        var remain = elapsed.TotalMinutes % 60;
+        userInfo.ball += quo;
+        if (userInfo.ball > userMaxBall)
+        {
+            userInfo.ball = userMaxBall;
+        }
+        var result= nowTime.AddMinutes(-remain);
+        userInfo.lastBallAddTime = result.ToLocalTime();
+        
+        
+        
+        //if()
+        return true;
+
+    }
+    
     private async Task<bool> GetUserInfo()
     {
         var userInfo = await BringTable<UserInfo>();
@@ -137,7 +189,8 @@ public class User
 
     private bool AddUserData<T>(IUserData value) where T : class
     {
-        return _userDatas.TryAdd(nameof(T), value);
+        var name = typeof(T).Name;
+        return _userDatas.TryAdd(name, value);
     }
 
     public async Task<bool>UpdateUserDatas()
@@ -160,8 +213,8 @@ public class User
      private async Task<T> BringTable<T>()where T:class
      {
          IUserData? data;
-
-         if (_userDatas.TryGetValue(nameof(T), out data))
+         var name = typeof(T).Name;
+         if (_userDatas.TryGetValue(name, out data))
          {
              return (T)data;
          }
@@ -183,7 +236,8 @@ public class User
      public T GetTable<T>() where T:class
      {
          IUserData data;
-         if (false==_userDatas.TryGetValue(nameof(T), out data)) 
+         var name = typeof(T).Name;
+         if (false==_userDatas.TryGetValue(name, out data)) 
          {
              return null;
          }

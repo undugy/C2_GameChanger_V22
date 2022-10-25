@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Server;
@@ -30,6 +31,24 @@ public class SetUpTableController:ControllerBase
         // 최종적으로 Response에
         //user_data와 register_result로 결과값 넣어주기
         //후에 필터에서 json으로 컨버팅
+        User user = new User(req.ID);
+        UserBag userBag = new UserBag(req.ID);
+        if (!await user.LoadUserData())
+        {
+            throw new Exception("유저정보 불러오기 실패");
+        }
+
+        if (!await userBag.SetUpBagAndMail())
+        {
+            throw new Exception("유저가방 불러오기 실패");
+        }
+
+        if (!await user.SetUpUser())
+        {
+            throw new Exception("유저세팅 실패");
+        }
+
+        await user.UpdateUserDatas();
         PkSetUpResponse response = new PkSetUpResponse();
         return response;
     }

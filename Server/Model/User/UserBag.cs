@@ -20,7 +20,21 @@ public class UserBag
         _redisMailId = id + "mail";
     }
 
-    public async Task<bool>MakeUserBag()
+    public async Task<bool> SetUpBagAndMail()
+    {
+        if (!await LoadUserBag())
+        {
+            return false;
+        }
+
+        if (!await LoadUserMail())
+        {
+            return false;
+        }
+
+        return true;
+    }
+    private async Task<bool>LoadUserBag()
     {
         if (!await GetBagFromRedis())
         {
@@ -32,7 +46,9 @@ public class UserBag
         return true;
     }
 
-    public async Task<bool> MakeUserMail()
+    
+    
+    private async Task<bool> LoadUserMail()
     {
         if (!await GetMailFromRedis())
         {
@@ -46,6 +62,8 @@ public class UserBag
 
     private async Task<bool> GetBagFromRedis()
     {
+        
+        
         var bagDict = await RedisManager.GetHash<int, BagProduct>(_redisBagId).GetAllAsync();
         if (bagDict == null)
             return false;
@@ -55,10 +73,10 @@ public class UserBag
     
     private async Task<bool> GetMailFromRedis()
     {
-        var mailList = await RedisManager.GetListByRange<UserMail>(_redisMailId);
+        var mailList = await RedisManager.GetSortedSetRangeByScore<UserMail>(_redisMailId,0,-1);
         if (mailList == null)
             return false;
-        _userMails = mailList;
+        _userMails = mailList.ToList();
         return true;
     }
     

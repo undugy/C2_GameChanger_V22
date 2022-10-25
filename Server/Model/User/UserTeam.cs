@@ -6,11 +6,11 @@ namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
-    public Int32 id { get; set; }
-    public string  userId{ get; set; }
-    public string? nickName{ get; set; }
-    public string  intro{ get; set; }
-    public Int32   leagueId{ get; set; }
+    public Int32 id;
+    public string userId;
+    public string? nickName;
+    public string intro;
+    public Int32 leagueId;
 
     public override string ToString()
     {
@@ -114,15 +114,15 @@ public class UserTeam:IUserData
         return result;
     }
     
-    public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userId)
+    public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userID)
     {
         UserTeam? userInfo=null;
         try
         {
             using (var conn = await DBManager.GetDBConnection())
             {
-                userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE id=@ID",
-                    new { ID = userId });
+                userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE userId=@ID",
+                    new { ID = userID });
             }
         }
         catch (Exception e)

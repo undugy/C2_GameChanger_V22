@@ -6,9 +6,12 @@ using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-
-
-
+// DateTime m = DateTime.Now;
+// DateTime b=DateTime.Now.AddDays(14);
+// var a = new TimeSpan(DateTime.Now.Ticks);
+// var c = new TimeSpan(b.Ticks).TotalDays;
+// DateTime n = m.AddDays((long)c);
+// Console.WriteLine(m.ToString("yyyyMMddHHmss"));
 
 builder.Host.ConfigureLogging(logging =>
 {

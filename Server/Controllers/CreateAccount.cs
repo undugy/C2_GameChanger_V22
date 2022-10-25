@@ -1,6 +1,8 @@
+using CloudStructures.Structures;
 using ZLogger;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Server.Model.User;
 using Server.Services;
 
@@ -22,6 +24,7 @@ public class CreateAccount:Controller
     {
         var response = new PkCreateAccountResponse();
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
+        
         response.Result = ErrorCode.NONE;
         User user = new User(request.ID);
         var result= await user.CreateUser(request.PW);
@@ -30,7 +33,7 @@ public class CreateAccount:Controller
             response.Result = result;
             return response;
         }
-
+        
         await user.UpdateUserDatas();
         return response;
     }
