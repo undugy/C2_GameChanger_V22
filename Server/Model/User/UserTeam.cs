@@ -6,11 +6,11 @@ namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
-    public Int32 id;
-    public string userId;
-    public string? nickName;
-    public string intro;
-    public Int32 leagueId;
+    public Int32 id { get; set; }
+    public string userId{ get; set; }
+    public string? nickName{ get; set; }
+    public string intro{ get; set; }
+    public Int32 leagueId{ get; set; }
 
     public override string ToString()
     {
@@ -103,14 +103,7 @@ public class UserTeam:IUserData
     
     public async Task<bool> SaveDataToRedis()
     {
-        bool result=await RedisManager.SetHashValue<string,UserTeam>(userId, nameof(UserTeam), new UserTeam()
-        {
-            id=id,
-            userId=userId,
-            nickName=nickName,
-            intro=intro,
-            leagueId=leagueId
-        });
+        bool result=await RedisManager.SetHashValue<string,UserTeam>(userId, nameof(UserTeam), this);
         return result;
     }
     

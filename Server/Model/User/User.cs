@@ -45,7 +45,7 @@ public class User
 
         var tblItem = TblItem.Get("NAMECHANGETICKET");
         var bagProduct = new BagProduct() { itemId = tblItem.Id, userId = _id, kind = "item", quantity = 1 };
-        await bagProduct.InsertOrUpdateBagProduct();
+        await bagProduct.InsertBagProduct();
         //await userInfo.SaveDataToRedis();
      
         
@@ -54,15 +54,15 @@ public class User
 
     public async Task<bool> LoadUserData()
     {
-
-        if (!await GetUserInfo())
-        {
-            return false;
-        }
         if (!await GetUserTeam())
         {
             return false;
         }
+        if (!await GetUserInfo())
+        {
+            return false;
+        }
+        
 
         return true;
     }
@@ -78,11 +78,52 @@ public class User
         {
             return false;
         }
-        userInfo.lastLoginTime = DateTime.Now.ToLocalTime();
+        
 
         return true;
     }
 
+    public async Task<ErrorCode> UserDailyCheck()
+    {
+        var userInfo = GetTable<UserInfo>();
+        var nowDay = DateTime.Now;
+        var diffDay = nowDay - userInfo.lastLoginTime;
+        TblDailyCheckIn? reward=null;
+        var result = ErrorCode.NONE;
+        if (diffDay.Days >= 1)
+        {
+            if (userInfo.dailyCheck == false)
+            {
+               reward= TblDailyCheckIn.Get(userInfo.checkDay);
+               var userMail = new UserMail()
+               {
+                   userId = _id,
+                   contentType = nameof(TblDailyCheckIn),
+                   checkDay = userInfo.checkDay,
+                   itemId = TblItem.Get(reward.ItemName).Id,
+                   quantity = reward.Quantity,
+                   receiveDate = nowDay.ToLocalTime()
+               };
+               result = await userMail.InsertUserMail();
+            }
+            else
+            {
+                userInfo.dailyCheck = false;
+            }
+
+            if (nowDay.Month > userInfo.lastLoginTime.Month)
+            {
+                userInfo.checkDay = 1;
+            }
+            else
+            {
+                userInfo.checkDay += 1;
+            }
+            
+        }
+        userInfo.lastLoginTime = nowDay.ToLocalTime();
+        return result;
+    }
     private bool UpdateBall()
     {
         var userInfo = GetTable<UserInfo>();
@@ -127,21 +168,7 @@ public class User
 
         return true;
     }
-    //private async Task<bool> GetUserBag()
-    //{
-    //    var userbag = await RedisManager.GetListByRange<UserBag>(_id + "bag");
-    //    if(userbag==null)
-    //    {
-    //        userbag=await UserBag.SelectQueryAsync(_id);
-    //        if (userbag == null)
-    //            return false;
-    //        _bagList = userbag.Select((v, i) => (value: v, index: i))
-    //            .ToDictionary(pair => pair.index, pair => pair.value);
-    //    }
 
-    //    return true;
-    //}
-    
     
     
     private async Task<bool> GetUserTeam()
@@ -197,11 +224,11 @@ public class User
     {
         foreach (var data in _userDatas)
         {
-            if (!await data.Value.SaveDataToRedis())
-            {
+            if(!await data.Value.SaveDataToRedis())
+                Console.WriteLine(data.Key);
                 //예외처리 보류
-                var result= await data.Value.SaveDataToDB();
-            }
+            var result= await data.Value.SaveDataToDB();
+            
         }
 
         return true;

@@ -9,11 +9,11 @@ using Server.Model.User;
 namespace Server.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class ReqLoginController:ControllerBase
+public class LoginController:Controller
 {
     private readonly ILogger _logger;
 
-    public ReqLoginController(ILogger<ReqLoginController> logger)
+    public LoginController(ILogger<LoginController> logger)
     {
         _logger = logger;
     }

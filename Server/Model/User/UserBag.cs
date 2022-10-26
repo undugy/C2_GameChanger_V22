@@ -2,6 +2,7 @@ using CloudStructures.Structures;
 using Dapper;
 using Server.Interface;
 using Server.Services;
+using Server.Table.CsvImpl;
 
 namespace Server.Model.User;
 
@@ -37,7 +38,7 @@ public class UserBag
 
         return true;
     }
-    private async Task<bool>LoadUserBag()
+    public async Task<bool>LoadUserBag()
     {
        if (!await GetBagFromRedis())
        {
@@ -54,9 +55,54 @@ public class UserBag
         return true;
     }
 
+    public async Task<BagProduct> DirectCheckIn(int day)
+    {
+        var reward = TblDailyCheckIn.Get(day);
+        var rewardItem = TblItem.Get(reward.ItemName);
+        BagProduct bagProduct;
+     
+        if (!_userBag.TryGetValue(rewardItem.Id, out bagProduct))
+        {
+            bagProduct = new BagProduct()
+            {
+                itemId = rewardItem.Id,
+                kind = "item",
+                quantity = reward.Quantity,
+                userId = _id
+            };
+
+            await bagProduct.InsertBagProduct();
+            
+            if (!await bagProduct.SaveDataToDB())
+            {
+                return null;
+            }
+            if(!await bagProduct.SaveDataToRedis(_redisBagId))
+            {
+                return null;
+            }
+
+            return bagProduct;
+        }
+
+        bagProduct.quantity += reward.Quantity;
+
+        if (!await bagProduct.SaveDataToDB())
+        {
+            return null;
+        }
+
+        if (!await bagProduct.SaveDataToRedis(_redisBagId))
+        {
+            return null;
+        }
+
+        return bagProduct;
+
+    }
+
     
-    
-    private async Task<bool> LoadUserMail()
+    public async Task<bool> LoadUserMail()
     {
         if (!await GetMailFromRedis())
         {

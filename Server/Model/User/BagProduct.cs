@@ -6,12 +6,12 @@ namespace Server.Model.User;
 
 public class BagProduct
 {
-    public int itemId;
-    public string userId;
-    public int quantity;
-    public string kind;
+    public int itemId{ get; set; }
+    public string userId{ get; set; }
+    public int quantity{ get; set; }
+    public string kind{ get; set; }
     
-    public async Task<ErrorCode> InsertOrUpdateBagProduct()
+    public async Task<ErrorCode> InsertBagProduct()
     {
         var result=ErrorCode.NONE;
         int row = 0;
@@ -52,7 +52,7 @@ public class BagProduct
                                      "userId=@UserID," +
                                      "quantity=@Quantity,"+
                                      "kind=@Kind "+
-                                     "WHERE userId=@UserId AND itemId=@ItemID";
+                                     "WHERE userId=@UserID AND itemId=@ItemID";
                 result = await conn.ExecuteAsync(query,new
                 {
                     ItemID=itemId,

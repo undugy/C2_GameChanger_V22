@@ -38,7 +38,7 @@ if (!app.Environment.IsDevelopment())
 app.UseRouting();
 
 
-
+app.UseCheckUserSessionMiddleWare();
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 //app.UseHttpsRedirection();
 

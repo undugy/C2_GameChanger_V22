@@ -73,7 +73,8 @@ public class RedisManager
     {
         var defaultExpiry = TimeSpan.FromDays(1);
         var redisId = new RedisDictionary<T_KEY,T>(RedisManager.GetConnection(),key,defaultExpiry);
-        return await redisId.SetAsync(subKey, value);
+        var result= await redisId.SetAsync(subKey, value);
+        return result;
     }
     public static async Task<long>InsertListValue<T>(string key,T value)where T:class
     {

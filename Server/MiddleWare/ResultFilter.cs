@@ -19,6 +19,7 @@ public class ResultFilter:IResultFilter
         ObjectResult objectResult = (ObjectResult)context.Result;
         var result = JsonConvert.SerializeObject(objectResult.Value);
         objectResult.Value = result;
+        Console.WriteLine(result);
      
     }
     public void OnResultExecuted(ResultExecutedContext context)

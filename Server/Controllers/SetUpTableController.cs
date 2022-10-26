@@ -39,20 +39,24 @@ public class SetUpTableController:ControllerBase
         {
             throw new Exception("유저정보 불러오기 실패");
         }
-
-        if (!await userBag.SetUpBagAndMail())
-        {
-            throw new Exception("유저가방 불러오기 실패");
-        }
-
         if (!await user.SetUpUser())
         {
             throw new Exception("유저세팅 실패");
         }
-
+        var result= await user.UserDailyCheck();
+        if (result != ErrorCode.NONE)
+        {
+            throw new Exception(result.ToString());
+        }
+        if (!await userBag.SetUpBagAndMail())
+        {
+            throw new Exception("유저가방 불러오기 실패");
+        }
+        
         var items = JsonConvert.SerializeObject(userBag.GetUserBag());
         //var mails = JsonConvert.SerializeObject(userBag.GetUserMail());
         response.Res.Add("UserInfo",user.GetTable<UserInfo>());
+        response.Res.Add("UserTeam",user.GetTable<UserTeam>());
         response.Res.Add("UserBag",items);
         response.Res.Add("UserMail",userBag.GetUserMail());
         await user.UpdateUserDatas();

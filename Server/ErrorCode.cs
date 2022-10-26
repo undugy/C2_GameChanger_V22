@@ -7,5 +7,7 @@ public enum ErrorCode:Int32
     WRONG_PW,
     
     ALREADY_EXIST=10,
-    CREATE_FAIL
+    CREATE_FAIL,
+    
+    ALREADY_GET=100
 }

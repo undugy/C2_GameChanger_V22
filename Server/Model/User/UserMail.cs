@@ -6,12 +6,12 @@ namespace Server.Model.User;
 
 public class UserMail
 {
-    public string userId;
-    public int checkDay;
-    public string contentType;
-    public int itemId;
-    public int quantity;
-    public DateTime receiveDate;
+    public string userId{ get; set; }
+    public int checkDay{ get; set; }
+    public string contentType{ get; set; }
+    public int itemId{ get; set; }
+    public int quantity{ get; set; }
+    public DateTime receiveDate{ get; set; }
     
     public async Task<ErrorCode> InsertUserMail()
     {
