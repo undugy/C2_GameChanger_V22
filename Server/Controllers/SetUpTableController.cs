@@ -52,12 +52,13 @@ public class SetUpTableController:ControllerBase
         {
             throw new Exception("유저가방 불러오기 실패");
         }
-        
-        var items = JsonConvert.SerializeObject(userBag.GetUserBag());
+        //JsonUtil
+        //var aa = userBag.GetUserBag();
+        //var items = JsonConvert.SerializeObject(aa);
         //var mails = JsonConvert.SerializeObject(userBag.GetUserMail());
         response.Res.Add("UserInfo",user.GetTable<UserInfo>());
         response.Res.Add("UserTeam",user.GetTable<UserTeam>());
-        response.Res.Add("UserBag",items);
+        //response.Res.Add("UserBag",items);
         response.Res.Add("UserMail",userBag.GetUserMail());
         await user.UpdateUserDatas();
         return response;

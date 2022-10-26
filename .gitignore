@@ -14,7 +14,7 @@
 *.userosscache
 *.sln.docstates
 *.http
-*.csv
+.csv
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

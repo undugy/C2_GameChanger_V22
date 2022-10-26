@@ -47,8 +47,10 @@ public class UserBag
             _userBag = result;
             foreach (var products in result)
             {
-                await products.Value.SaveDataToRedis(_redisBagId);
-
+                if (!await products.Value.SaveDataToRedis(_redisBagId))
+                {
+                    Console.WriteLine(products.Key);
+                }
             }
         }
 
