@@ -4,9 +4,10 @@ using System.Text;
 using CloudStructures.Structures;
 using CsvHelper.Configuration.Attributes;
 using Microsoft.AspNetCore.Components.Web;
+using Server.Interface;
 
 namespace Server.Services;
-public class RedisManager
+public class RedisManager:IRedisManager
 {
     private static RedisConnection _redisConn;
     private const string _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -21,13 +22,13 @@ public class RedisManager
          _redisConn = new RedisConnection(config);
         
     }
-    public static async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
+    public async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
     {
         var redisId = new RedisDictionary<string,T>(RedisManager.GetConnection(),key,null);
         
         return await redisId.GetAsync(subKey);
     }
-    public static async Task<List<T>>GetListByRange<T>(string key)
+    public async Task<List<T>>GetListByRange<T>(string key)
     {
         var redisId = new RedisList<T>(GetConnection(),key,null);
         List<T> result = new List<T>();
@@ -35,20 +36,20 @@ public class RedisManager
         result.AddRange(redisList.ToList());
         return result;
     }
-    public static  RedisDictionary<T_KEY,T>GetHash<T_KEY,T>(string key)
+    public  RedisDictionary<T_KEY,T>GetHash<T_KEY,T>(string key)
     {
         var redisId = new RedisDictionary<T_KEY,T>(RedisManager.GetConnection(),key,null);
         
         return redisId;
     }
     
-    public static async Task<RedisSortedSet<T>>GetSortedSet<T>(string key)
+    public async Task<RedisSortedSet<T>>GetSortedSet<T>(string key)
     {
         var redisId = new RedisSortedSet<T>(RedisManager.GetConnection(),key,null);
         await redisId.DeleteAsync();
         return redisId;
     }
-    public static async Task<T[]>GetSortedSetRangeByScore<T>(string key,int min,int max)
+    public async Task<T[]>GetSortedSetRangeByScore<T>(string key,int min,int max)
     {
         var redisId = new RedisSortedSet<T>(RedisManager.GetConnection(),key,null);
         await redisId.DeleteAsync();
@@ -57,46 +58,38 @@ public class RedisManager
         
         return result;
     }
-    public static async Task<RedisResult<T>> GetStringValue<T>(string key)
+    public  async Task<RedisResult<T>> GetStringValue<T>(string key)
     {
         var redisId = new RedisString<T>(RedisManager.GetConnection(),key,null);
         
         return await redisId.GetAsync();
     }
-    public static async Task<bool> SetStringValue<T>(string key, T value)
+    public  async Task<bool> SetStringValue<T>(string key, T value)
     {
         var defaultExpiry = TimeSpan.FromDays(1);
         var redisId = new RedisString<T>(RedisManager.GetConnection(),key,defaultExpiry);
         return await redisId.SetAsync(value);
     }
-    public static async Task<bool>SetHashValue<T_KEY,T>(string key,T_KEY subKey,T value)where T:class
+    public async Task<bool>SetHashValue<TKEY,T>(string key,TKEY subKey,T value)where T:class
     {
         var defaultExpiry = TimeSpan.FromDays(1);
-        var redisId = new RedisDictionary<T_KEY,T>(RedisManager.GetConnection(),key,defaultExpiry);
+        var redisId = new RedisDictionary<TKEY,T>(RedisManager.GetConnection(),key,defaultExpiry);
         var result= await redisId.SetAsync(subKey, value);
         return result;
     }
-    public static async Task<long>InsertListValue<T>(string key,T value)where T:class
+    public  async Task<long>InsertListValue<T>(string key,T value)where T:class
     {
         var defaultExpiry = TimeSpan.FromDays(1);
         var redisId = new RedisList<T>(RedisManager.GetConnection(),key,defaultExpiry);
         return await redisId.RightPushAsync(value);
     }
     
-    public static async Task<long>SetListValue<T>(string key,T value,TimeSpan?expiry=null)where T:class
+    public async Task<long>SetListValue<T>(string key,T value,TimeSpan?expiry=null)where T:class
     {
         var redisId = new RedisList<T>(RedisManager.GetConnection(),key,expiry);
         return await redisId.RightPushAsync(value);
     }
     
-    public static string AuthToken()
-    {
-        var bytes = new byte[25];
-        using (var random = RandomNumberGenerator.Create())
-        {
-            random.GetBytes(bytes);
-        }
-        return new string(bytes.Select(x => _allowableCharacters[x % _allowableCharacters.Length]).ToArray());
-    }
+    
 }
 

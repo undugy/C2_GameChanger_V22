@@ -5,6 +5,9 @@ using Dapper;
 using CloudStructures.Structures;
 using Server;
 using Server.Model.User;
+using StackExchange.Redis;
+using Server.Services;
+using Server.Table;
 
 namespace Server.Controllers;
 [ApiController]
@@ -12,10 +15,12 @@ namespace Server.Controllers;
 public class LoginController:Controller
 {
     private readonly ILogger _logger;
+    private readonly IDatabase _database;
 
-    public LoginController(ILogger<LoginController> logger)
+    public LoginController(ILogger<LoginController> logger,IDatabase database)
     {
         _logger = logger;
+        _database = database;
     }
 
     [HttpPost]
@@ -33,7 +38,7 @@ public class LoginController:Controller
             response.Result = ErrorCode.NOID;
             return response;
         }
-        var HashPw = DBManager.MakeHashingPassWord(userInfo.saltValue, request.pw);
+        var HashPw = ConstantValue.MakeHashingPassWord(userInfo.saltValue, request.pw);
         if (userInfo.pw == HashPw)
         {
             //토큰 등록

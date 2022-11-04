@@ -9,7 +9,7 @@ namespace Server.Table
     /// Csv 파일 로더 클래스
     /// Properties 디렉토리의 csv 파일 로드
     /// </summary>
-    public class CsvTableLoder : Singleton<CsvTableLoder>
+    public class CsvTableLoder 
     {
         private Dictionary<string, CsvTableBase> regTblMap_;
 

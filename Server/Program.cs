@@ -1,18 +1,17 @@
 using Microsoft.Extensions.Caching.Memory;
+using Server.Interface;
 using Server.Services;
 using Server.Table;
 using Server.Table.CsvImpl;
 using Server.MiddleWare;
+using StackExchange.Redis;
 using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-// DateTime m = DateTime.Now;
-// DateTime b=DateTime.Now.AddDays(14);
-// var a = new TimeSpan(DateTime.Now.Ticks);
-// var c = new TimeSpan(b.Ticks).TotalDays;
-// DateTime n = m.AddDays((long)c);
-// Console.WriteLine(m.ToString("yyyyMMddHHmss"));
+builder.Services.AddTransient<IDataBaseManager, DBManager>();
+builder.Services.AddTransient<IRedisManager, RedisManager>();
+
 
 builder.Host.ConfigureLogging(logging =>
 {
@@ -27,7 +26,7 @@ builder.Host.ConfigureLogging(logging =>
 builder.Services.AddControllers().AddMvcOptions(options => options.Filters.Add(typeof(ResultFilter)));
 
 MemcacheManager.Init();
-CsvTableLoder.GetInstance.Load();
+//CsvTableLoder.Load();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
@@ -45,6 +44,6 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 //app.UseAuthorization();
 
 //app.MapControllers();
-RedisManager.Init(builder.Configuration.GetSection("DBConnection")["Redis"]);
-DBManager.Init(builder.Configuration.GetSection("DBConnection")["MySqlGame"]);
+RedisManager.Init(app.Configuration.GetSection("DBConnection")["Redis"]);
+DBManager.Init(app.Configuration);
 app.Run();

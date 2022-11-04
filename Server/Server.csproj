@@ -20,6 +20,7 @@
       <Compile Remove="Controllers\WeatherForecastController.cs" />
       <Compile Remove="WeatherForecast.cs" />
       <Compile Remove="Interface\ICacheHelper.cs" />
+      <Compile Remove="Singleton.cs" />
     </ItemGroup>
 
 </Project>
