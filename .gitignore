@@ -14,7 +14,8 @@
 *.userosscache
 *.sln.docstates
 *.http
-.csv
+
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -404,7 +405,7 @@ FodyWeavers.xsd
 # .NET Core build folders
 bin/
 obj/
-
+.idea/
 # Common node modules locations
 /node_modules
 /wwwroot/node_modules
