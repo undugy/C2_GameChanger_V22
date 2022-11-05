@@ -21,6 +21,11 @@
       <Compile Remove="WeatherForecast.cs" />
       <Compile Remove="Interface\ICacheHelper.cs" />
       <Compile Remove="Singleton.cs" />
+      <Compile Remove="Interface\IJsonTable.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Table" />
     </ItemGroup>
 
 </Project>

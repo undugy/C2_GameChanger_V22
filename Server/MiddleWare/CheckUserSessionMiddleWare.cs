@@ -2,6 +2,7 @@ using System.Text;
 using CloudStructures.Structures;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Server.Interface;
 using Server.Services;
 using ZLogger;
 namespace Server.MiddleWare;
@@ -10,10 +11,12 @@ public class CheckUserSessionMiddleWare
 {
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
-    public CheckUserSessionMiddleWare(RequestDelegate next,ILogger<CheckUserSessionMiddleWare>logger)
+    private readonly IRedisManager _redis;
+    public CheckUserSessionMiddleWare(RequestDelegate next,ILogger<CheckUserSessionMiddleWare>logger,IRedisManager redis)
     {
         _next = next;
         _logger = logger;
+        _redis = redis;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -38,13 +41,13 @@ public class CheckUserSessionMiddleWare
                 return;
             }
             //TODO Redis 인증확인
-            var RedisToken = await RedisManager.GetStringValue<string>(userID+"Login");
+            var RedisToken = await _redis.GetStringValue<string>(userID+"Login");
             
             if (RedisToken.ToString() != accessToken)
             {
                 _logger.ZLogInformation($"{accessToken} token and {RedisToken.ToString()} is not matched");
             }
-            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body)); //이거 의미있는지?
         }
 
         await _next(context);

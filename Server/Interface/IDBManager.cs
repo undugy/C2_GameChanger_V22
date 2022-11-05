@@ -2,8 +2,8 @@ using MySqlConnector;
 
 namespace Server.Interface;
 
-public interface IDataBaseManager
+public interface IDBManager
 {
     public Task<MySqlConnection> GetOpenMySqlConnection(string connectionString);
-    public Task<MySqlConnection> GetAccountDbConnection();
+    public Task<MySqlConnection> GetDBConnection();
 }

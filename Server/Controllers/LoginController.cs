@@ -4,6 +4,7 @@ using ZLogger;
 using Dapper;
 using CloudStructures.Structures;
 using Server;
+using Server.Interface;
 using Server.Model.User;
 using StackExchange.Redis;
 using Server.Services;
@@ -15,12 +16,13 @@ namespace Server.Controllers;
 public class LoginController:Controller
 {
     private readonly ILogger _logger;
-    private readonly IDatabase _database;
-
-    public LoginController(ILogger<LoginController> logger,IDatabase database)
+    private readonly IDBManager _database;
+    private readonly IRedisManager _redis;
+    public LoginController(ILogger<LoginController> logger,IDBManager database, IRedisManager redis)
     {
         _logger = logger;
         _database = database;
+        _redis = redis;
     }
 
     [HttpPost]
@@ -42,9 +44,9 @@ public class LoginController:Controller
         if (userInfo.pw == HashPw)
         {
             //토큰 등록
-            string token = RedisManager.AuthToken();
+            string token = ConstantValue.AuthToken();
             
-            if (await RedisManager.SetStringValue<string>(request.id+"Login", token))
+            if (await _redis.SetStringValue<string>(request.id+"Login", token))
             {
                 response.Token = token;
                 //userInfo.lastLoginTime=DateTime.Now;

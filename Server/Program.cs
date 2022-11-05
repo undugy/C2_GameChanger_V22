@@ -1,15 +1,13 @@
 using Microsoft.Extensions.Caching.Memory;
 using Server.Interface;
 using Server.Services;
-using Server.Table;
-using Server.Table.CsvImpl;
 using Server.MiddleWare;
 using StackExchange.Redis;
 using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddTransient<IDataBaseManager, DBManager>();
+builder.Services.AddTransient<IDBManager, DBManager>();
 builder.Services.AddTransient<IRedisManager, RedisManager>();
 
 
@@ -23,7 +21,7 @@ builder.Host.ConfigureLogging(logging =>
         $"logs/{dt.ToLocalTime():yyyy-MM-dd}_{x:000}.log", x => x.ToLocalTime().Date, 1024);
 });
 
-builder.Services.AddControllers().AddMvcOptions(options => options.Filters.Add(typeof(ResultFilter)));
+
 
 MemcacheManager.Init();
 //CsvTableLoder.Load();
@@ -32,7 +30,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+   // app.UseDeveloperExceptionPage();
 }
 app.UseRouting();
 

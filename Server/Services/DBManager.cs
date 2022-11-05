@@ -7,7 +7,7 @@ using StackExchange.Redis;
 
 namespace Server.Services;
 
-public class DBManager: IDataBaseManager
+public class DBManager: IDBManager
 {
     private static string _DBConnectionString;
    
