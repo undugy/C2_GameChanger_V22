@@ -19,7 +19,7 @@ public class CheckInController:Controller
         var response = new PkCheckInResponse();
         var user = new User(request.ID);
         var userBag = new UserBag(request.ID);
-        BagProduct? bagProduct=null;
+        UserItem? bagProduct=null;
         if (!await user.LoadUserData())
         {
             throw new Exception("초기화 실패");

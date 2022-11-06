@@ -6,124 +6,86 @@ namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
-    public Int32 id { get; set; }
-    public string userId{ get; set; }
-    public string? nickName{ get; set; }
-    public string intro{ get; set; }
-    public Int32 leagueId{ get; set; }
-
+    public  UInt32 TeamId { get; set; }
+    public UInt32 UserId{ get; set; }
+    public string? NickName{ get; set; }
+    public UInt32 Point{ get; set; }
+    public UInt32 Star{ get; set; }
+    public UInt32 Ball{ get; set; }
+    public UInt32 Exp{ get; set; }
+    public Int32 TeamLevel{ get; set; }
+    public string Intro{ get; set; }
+    
     public override string ToString()
     {
         return "UserTeam";
     }
-
-    public async Task<Int64> CountTeamFromDB(string teamName)
+    
+    public (String,Object) InsertQuery()
     {
-        Int64 result = 0;
-        try
+       
+        var query = "INSERT INTO user_team(UserId,NickName,Point,Star,Ball,Exp,TeamLevel,Intro) " +
+                         "VALUES(@userId,@nickName,@point,@star,@ball,@exp,@teamLevel,@intro)";
+        var obj =new
         {
-            using (var conn = await DBManager.GetDBConnection())
-            {
-                const string query = "SELECT COUNT(*) FROM user_team WHERE id=@ID";
-                result = await conn.ExecuteScalarAsync<Int64>(query,new
-                {
-                    ID=id
-                });
+            userId=UserId,
+            nickName=NickName,
+            point=Point,
+            star=Star,
+            ball=Ball,
+            exp=Exp,
+            teamLevel=TeamLevel,
+            intro=Intro
+        };
                 
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            //throw;
-        }
-
-        return result;
+        return (query,obj);
     }
-    public async Task<ErrorCode> InsertUserTeam()
+    public (String,Object) UpdateQuery()
     {
-        var result=ErrorCode.NONE;
-        int row = 0;
-        try
-        {
-            using (var conn = await DBManager.GetDBConnection())
-            {
-                const string query = "INSERT INTO user_team(id,userId,nickName) " +
-                                     "VALUES(@ID,@UserId,@NickName)";
-                row = await conn.ExecuteAsync(query,new
+        var query = "UPDATE user_team " +
+                         "SET " +
+                         "UserId=@userId," +
+                         "NickName=@nickName," +
+                         "Point=@point, " +
+                         "Star=@star, " +
+                         "Ball=@ball, " +
+                         "Exp=@exp, " +
+                         "TeamLevel=@teamLevel, " +
+                         "Intro=@intro " +
+                         "WHERE UserId=@userId"; 
+        var obj = new
                 {
-                    ID=id,
-                    UserId=userId,
-                    NickName=nickName
-                });
-                
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            result = ErrorCode.CREATE_FAIL;
-        }
+                    userId=UserId,
+                    nickName=NickName,
+                    point=Point,
+                    star=Star,
+                    ball=Ball,
+                    exp=Exp,
+                    teamLevel=TeamLevel,
+                    intro=Intro
+                };
 
-        return result;
-    }
-    public async Task<bool> SaveDataToDB()
-    {
-        int result=0;
-        try
-        {
-            using (var conn = await DBManager.GetDBConnection())
-            {
-                const string query = "UPDATE user_team " +
-                                     "SET id=@Id," +
-                                     "userId=@UserId," +
-                                     "nickName=@NickName," +
-                                     "intro=@Intro," +
-                                     "leagueId=@LeagueId " +
-                                     "WHERE userId=@UserId";
-                result = await conn.ExecuteAsync(query,new
-                {
-                    Id=id,
-                    UserId=userId,
-                    NickName=nickName,
-                    Intro=intro,
-                    LeagueId=leagueId
-                });
-                
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            //throw;
-        }
-
-        return (result == 1);
+        return (query, obj);
     }
     
-    public async Task<bool> SaveDataToRedis()
-    {
-        bool result=await RedisManager.SetHashValue<string,UserTeam>(userId, nameof(UserTeam), this);
-        return result;
-    }
     
-    public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userID)
-    {
-        UserTeam? userInfo=null;
-        try
-        {
-            using (var conn = await DBManager.GetDBConnection())
-            {
-                userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE userId=@ID",
-                    new { ID = userID });
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return userInfo;
-        }
-
-        return userInfo;
-    }
+    // public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userID)
+    // {
+    //     UserTeam? userInfo=null;
+    //     try
+    //     {
+    //         using (var conn = await DBManager.GetDBConnection())
+    //         {
+    //             userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE userId=@ID",
+    //                 new { ID = userID });
+    //         }
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         Console.WriteLine(e);
+    //         return userInfo;
+    //     }
+    //
+    //     return userInfo;
+    // }
 }

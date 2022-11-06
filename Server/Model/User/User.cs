@@ -44,7 +44,7 @@ public class User
         result = await  userInfo.InsertUserInfo();
 
         var tblItem = TblItem.Get("NAMECHANGETICKET");
-        var bagProduct = new BagProduct() { itemId = tblItem.Id, userId = _id, kind = "item", quantity = 1 };
+        var bagProduct = new UserItem() { itemId = tblItem.Id, userId = _id, kind = "item", quantity = 1 };
         await bagProduct.InsertBagProduct();
         //await userInfo.SaveDataToRedis();
      

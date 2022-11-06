@@ -2,7 +2,7 @@ using CloudStructures.Structures;
 using Dapper;
 using Server.Interface;
 using Server.Services;
-using Server.Table.CsvImpl;
+
 
 namespace Server.Model.User;
 
@@ -12,10 +12,10 @@ public class UserBag
     private readonly string _id;
     private readonly string _redisBagId;
     private readonly string _redisMailId;
-    private Dictionary<int,BagProduct> _userBag;
+    private Dictionary<int,UserItem> _userBag;
     private List<UserMail> _userMails;
 
-    public Dictionary<int,BagProduct>GetUserBag() => _userBag; 
+    public Dictionary<int,UserItem>GetUserBag() => _userBag; 
     public List<UserMail>GetUserMail()=> _userMails;
     public UserBag(string id)
     {
@@ -42,7 +42,7 @@ public class UserBag
     {
        if (!await GetBagFromRedis())
        {
-            var result= await BagProduct.SelectQueryAsync(_id);
+            var result= await UserItem.SelectQueryAsync(_id);
             if (result == null) return false;
             _userBag = result;
             foreach (var products in result)
@@ -57,15 +57,15 @@ public class UserBag
         return true;
     }
 
-    public async Task<BagProduct> DirectCheckIn(int day)
+    public async Task<UserItem> DirectCheckIn(int day)
     {
         var reward = TblDailyCheckIn.Get(day);
         var rewardItem = TblItem.Get(reward.ItemName);
-        BagProduct bagProduct;
+        UserItem userItem;
      
-        if (!_userBag.TryGetValue(rewardItem.Id, out bagProduct))
+        if (!_userBag.TryGetValue(rewardItem.Id, out userItem))
         {
-            bagProduct = new BagProduct()
+            userItem = new UserItem()
             {
                 itemId = rewardItem.Id,
                 kind = "item",
@@ -73,33 +73,33 @@ public class UserBag
                 userId = _id
             };
 
-            await bagProduct.InsertBagProduct();
+            await userItem.InsertBagProduct();
             
-            if (!await bagProduct.SaveDataToDB())
+            if (!await userItem.SaveDataToDB())
             {
                 return null;
             }
-            if(!await bagProduct.SaveDataToRedis(_redisBagId))
+            if(!await userItem.SaveDataToRedis(_redisBagId))
             {
                 return null;
             }
 
-            return bagProduct;
+            return userItem;
         }
 
-        bagProduct.quantity += reward.Quantity;
+        userItem.quantity += reward.Quantity;
 
-        if (!await bagProduct.SaveDataToDB())
+        if (!await userItem.SaveDataToDB())
         {
             return null;
         }
 
-        if (!await bagProduct.SaveDataToRedis(_redisBagId))
+        if (!await userItem.SaveDataToRedis(_redisBagId))
         {
             return null;
         }
 
-        return bagProduct;
+        return userItem;
 
     }
 
@@ -124,7 +124,7 @@ public class UserBag
     {
         
         
-        var bagDict = await RedisManager.GetHash<int, BagProduct>(_redisBagId).GetAllAsync();
+        var bagDict = await RedisManager.GetHash<int, UserItem>(_redisBagId).GetAllAsync();
         if (bagDict.Count == 0)
             return false;
         _userBag = bagDict;
