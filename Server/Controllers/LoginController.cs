@@ -33,23 +33,34 @@ public class LoginController:Controller
         //토큰인증 후 없으면 DB에서 아이디 존재유무확인 있으면 비밀번호 맞는지확인 
         var response = new PkLoginResponse();
         response.Result = ErrorCode.NONE;
-        var userInfo = await UserInfo.SelectQueryOrDefaultAsync(request.id);
+        UserInfo? userInfo=null;
+        using (var connection=await _database.GetDBConnection())
+        {
+            try
+            {
+                userInfo = await connection.QuerySingleOrDefaultAsync<UserInfo>("SELECT * FROM user_info WHERE Email=@email",
+                        new { email = request.id });
+            }
+            catch (Exception e)
+            {
+                _logger.ZLogInformation(e.Message);
+            }
+        }
         if (userInfo == null)
         {
             response.Token = "";
             response.Result = ErrorCode.NOID;
             return response;
         }
-        var HashPw = ConstantValue.MakeHashingPassWord(userInfo.saltValue, request.pw);
-        if (userInfo.pw == HashPw)
+        var HashPw = HashFunctions.MakeHashingPassWord(userInfo.SaltValue, request.pw);
+        if (userInfo.HashedPassword == HashPw)
         {
             //토큰 등록
-            string token = ConstantValue.AuthToken();
+            string token = HashFunctions.AuthToken();
             
-            if (await _redis.SetStringValue<string>(request.id+"Login", token))
+            if (await _redis.SetStringValue<string>(request.id, token))
             {
                 response.Token = token;
-                //userInfo.lastLoginTime=DateTime.Now;
                 return response;
             }
         }

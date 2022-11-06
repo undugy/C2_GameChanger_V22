@@ -127,7 +127,7 @@ public class User
     private bool UpdateBall()
     {
         var userInfo = GetTable<UserInfo>();
-        var userMaxBall = ConstantValue.BallMax + userInfo.level;
+        var userMaxBall = HashFunctions.BallMax + userInfo.level;
         if (userInfo.ball >=userMaxBall )
         {
             return true;
