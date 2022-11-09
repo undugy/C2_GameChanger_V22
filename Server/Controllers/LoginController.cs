@@ -1,13 +1,8 @@
-using Server.Services;
 using Microsoft.AspNetCore.Mvc;
 using ZLogger;
 using Dapper;
-using CloudStructures.Structures;
-using Server;
 using Server.Interface;
 using Server.Model.User;
-using StackExchange.Redis;
-using Server.Services;
 using Server.Table;
 
 namespace Server.Controllers;
@@ -34,18 +29,23 @@ public class LoginController:Controller
         var response = new PkLoginResponse();
         response.Result = ErrorCode.NONE;
         UserInfo? userInfo=null;
-        using (var connection=await _database.GetDBConnection())
+        await using (var connection= await _database.GetDBConnection())
         {
+           
             try
             {
-                userInfo = await connection.QuerySingleOrDefaultAsync<UserInfo>("SELECT * FROM user_info WHERE Email=@email",
-                        new { email = request.id });
+                userInfo = await connection.QuerySingleOrDefaultAsync<UserInfo>(
+                    "SELECT * FROM user_info WHERE Email=@email",
+                    new { email = request.id });
             }
             catch (Exception e)
             {
-                _logger.ZLogInformation(e.Message);
+                _logger.ZLogDebug(e.Message);
+                response.Result = ErrorCode.NOID;
             }
+            
         }
+        
         if (userInfo == null)
         {
             response.Token = "";

@@ -8,3 +8,4 @@ public interface IDBManager
     public Task<MySqlConnection> GetDBConnection();
     public Task<MySqlConnection> GetMasterDBConnection();
 }
+

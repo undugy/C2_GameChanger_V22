@@ -22,6 +22,10 @@
       <Compile Remove="Interface\ICacheHelper.cs" />
       <Compile Remove="Singleton.cs" />
       <Compile Remove="Interface\IJsonTable.cs" />
+      <Compile Remove="QueryFormatter.cs" />
+      <Compile Remove="Model\User\UserBag.cs" />
+      <Compile Remove="Model\User\User.cs" />
+      <Compile Remove="Controllers\CheckInController.cs" />
     </ItemGroup>
 
     <ItemGroup>

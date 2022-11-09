@@ -3,8 +3,10 @@ using ZLogger;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Server.Interface;
 using Server.Model.User;
 using Server.Services;
+using Server.Table;
 
 namespace Server.Controllers;
 
@@ -14,27 +16,49 @@ namespace Server.Controllers;
 public class CreateAccount:Controller
 {
     private readonly ILogger _logger;
-
-    public CreateAccount(ILogger<CreateAccount> logger)
+    private readonly IDBManager _database;
+    public CreateAccount(ILogger<CreateAccount> logger,IDBManager database)
     {
         _logger = logger;
+        _database = database;
     }
     [HttpPost]
     public async Task<PkCreateAccountResponse> Post(PkCreateAccountRequest request)
     {
         var response = new PkCreateAccountResponse();
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
-        
-        response.Result = ErrorCode.NONE;
-        User user = new User(request.ID);
-        var result= await user.CreateUser(request.PW);
-        if (result!=ErrorCode.NONE)
+        var saltValue = HashFunctions.SaltString();
+        var hashedPassword = HashFunctions.MakeHashingPassWord(saltValue, request.PW);
+        await using (var connection = await _database.GetDBConnection())
         {
-            response.Result = result;
-            return response;
+            UserInfo userInfo = new UserInfo()
+                { Email = request.ID, SaltValue = saltValue, HashedPassword = hashedPassword };
+            var insertQuery = userInfo.InsertQuery();
+            var affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
+            if (affectRow == 0)
+            {
+                response.Result = ErrorCode.ALREADY_EXIST;
+            }
+
+            
+            
+            //TODO SetUpTableController쪽으로 옮기기
+            // UserTeam userTeam=new UserTeam(){}
+            // await using (var masterConnection = await _database.GetMasterDBConnection())
+            // {
+            //     int masterItemId =
+            //         masterConnection.QuerySingleOrDefault<int>("SELECT ItemId FROM item WHERE Name=@name",
+            //             new { name = "NAMECHANGETICKET" });
+            //     if (masterItemId == 0)
+            //     {
+            //         response.Result = ErrorCode.NOID;
+            //     }
+            // }
+            //
+            // UserItem=new UserItem(){}
+            
         }
         
-        await user.UpdateUserDatas();
         return response;
     }
 }
@@ -48,5 +72,9 @@ public class PkCreateAccountRequest
 
 public class PkCreateAccountResponse
 {
+    public PkCreateAccountResponse()
+    {
+        Result = ErrorCode.NONE;
+    }
     public ErrorCode Result { get; set; }
 }

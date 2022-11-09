@@ -5,6 +5,7 @@ using Server.Table;
 
 namespace Server.Model.User;
 
+
 public class UserInfo: IUserData
 {
     public string UserId { get; set; }
@@ -17,12 +18,12 @@ public class UserInfo: IUserData
         return "user_info";
     }
 
-    
+
     
 
     public (String,Object) InsertQuery()
     {
-        var query = "INSERT INTO user_info(Email,HashedPassword,SaltValue) Values(@email,@pw,@salt) ";
+        var query = "INSERT IGNORE INTO user_info(Email,HashedPassword,SaltValue) Values(@email,@pw,@salt) ";
         var obj= new
                     {
                         email=Email,
@@ -55,25 +56,14 @@ public class UserInfo: IUserData
     }
     
 
-    // public static async Task<UserInfo> SelectQueryOrDefaultAsync(string userId)
-    // {
-    //     UserInfo? userInfo=null;
-    //     try
-    //     {
-    //         using (var conn = await DBManager.GetDBConnection())
-    //         {
-    //            userInfo=await conn.QuerySingleOrDefaultAsync<UserInfo>("SELECT * FROM user_info WHERE id=@ID",
-    //                 new { ID = userId });
-    //         }
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         Console.WriteLine(e);
-    //         return userInfo;
-    //     }
-    //
-    //     return userInfo;
-    // }
+    public static (string,object) SelectUserInfo(string email)
+    {
+
+        var query = "SELECT * FROM user_info WHERE id=@ID";
+        var obj=new { ID = email };
+       
+        return (query,obj);
+    }
 
     
 }

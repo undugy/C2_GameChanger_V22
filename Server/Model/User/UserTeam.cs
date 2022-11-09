@@ -15,6 +15,14 @@ public class UserTeam:IUserData
     public UInt32 Exp{ get; set; }
     public Int32 TeamLevel{ get; set; }
     public string Intro{ get; set; }
+
+
+    public UserTeam(UInt32 teamId,UInt32 userId, string?nickName)
+    {
+        TeamId = teamId;
+        UserId = userId;
+        NickName = nickName;
+    }
     
     public override string ToString()
     {
@@ -24,18 +32,13 @@ public class UserTeam:IUserData
     public (String,Object) InsertQuery()
     {
        
-        var query = "INSERT INTO user_team(UserId,NickName,Point,Star,Ball,Exp,TeamLevel,Intro) " +
-                         "VALUES(@userId,@nickName,@point,@star,@ball,@exp,@teamLevel,@intro)";
+        var query = "INSERT IGNORE INTO user_team(TeamId,UserId,NickName) " +
+                         "VALUES(@teamId,@userId,@nickName)";
         var obj =new
         {
+            teamId=TeamId,
             userId=UserId,
-            nickName=NickName,
-            point=Point,
-            star=Star,
-            ball=Ball,
-            exp=Exp,
-            teamLevel=TeamLevel,
-            intro=Intro
+            nickName=NickName
         };
                 
         return (query,obj);

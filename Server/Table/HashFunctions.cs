@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Server.Table;
 
-public class HashFunctions
+public static class HashFunctions
 {
     private static string  _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
     public static string  MakeHashingPassWord(string saltValue, string pw)//임시
