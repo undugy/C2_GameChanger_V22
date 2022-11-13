@@ -27,11 +27,12 @@ public class CreateAccount:Controller
     {
         var response = new PkCreateAccountResponse();
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
+        var database = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var saltValue = HashFunctions.SaltString();
         var hashedPassword = HashFunctions.MakeHashingPassWord(saltValue, request.PW);
-        await using (var connection = await _database.GetDBConnection())
+        await using (var connection = await database.GetDBConnection())
         {
-            UserInfo userInfo = new UserInfo()
+            var userInfo = new UserInfo()
                 { Email = request.ID, SaltValue = saltValue, HashedPassword = hashedPassword };
             var insertQuery = userInfo.InsertQuery();
             var affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);

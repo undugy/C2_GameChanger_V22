@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
 using Server.Model.User;
+using Server.Services;
 using StackExchange.Redis;
 
 
@@ -45,47 +46,48 @@ public class SetUpTableController:ControllerBase
     public async Task<PkInitializeTeamResponse>Post(PkInitializeTeamRequest request)
     {
         var response = new PkInitializeTeamResponse();
-        int masterItemId = 0;
-        UInt32 masterTeamId = 0;
-        await using (var connection = await _database.GetDBConnection())
+        var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
+        var masterDb=_database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
+       
+        
+        var ItemIdResult  = await masterDb.SelectSingleItemId("NAMECHANGETICKET");
+        if (ItemIdResult.Item1 != ErrorCode.NONE)
         {
-            await using (var masterDbConnection = await _database.GetMasterDBConnection())
-            {
-                masterItemId = await
-                    masterDbConnection.QuerySingleOrDefaultAsync<int>("SELECT ItemId FROM item WHERE Name=@name",
-                new { name = "NAMECHANGETICKET" });
+            response.Result = ItemIdResult.Item1;
+            return response;
+        }
+        var TeamIdResult=await masterDb.SelectSingleTeamId(request.TeamName);
+        if (TeamIdResult.Item1 != ErrorCode.NONE)
+        {
+            response.Result = ItemIdResult.Item1;
+            return response;
+        }        
                 
-                masterTeamId=await masterDbConnection.QuerySingleOrDefaultAsync<UInt32>("SELECT TeamId FROM team WHERE Name=@name",
-                    new { name = request.TeamName });
-                if (masterItemId == 0||masterTeamId==0)
-                {
-                    response.Result = ErrorCode.NOID;
-                    return response;
-                }
-                
-            }
+            
 
-            string nickName = request.TeamName + '#' + request.ID;
-            UserTeam userTeam = new UserTeam(masterTeamId, request.ID, nickName);
+        string nickName = request.TeamName + '#' + request.ID;
+        await using (var connection = await gameDb.GetDBConnection())
+        {
+            UserTeam userTeam = new UserTeam(TeamIdResult.Item2, request.ID, nickName);
             var insertQuery = userTeam.InsertQuery();
             var affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
             if (affectRow == 0)
             {
                 response.Result = ErrorCode.NOID;
-            
-            }
 
-            UserItem userItem = new UserItem() { ItemId = masterItemId, Quantity = 1, UserId = request.ID };
-            insertQuery = userItem.InsertQuery();
-            affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
-            if (affectRow == 0)
-            {
-                response.Result = ErrorCode.NOID;
-             
+
+                UserItem userItem = new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID };
+                insertQuery = userItem.InsertQuery();
+                affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
+                if (affectRow == 0)
+                {
+                    response.Result = ErrorCode.NOID;
+                }
+
             }
-        }   
-        
-        
+        }
+
+
         return response;
     }
 }
