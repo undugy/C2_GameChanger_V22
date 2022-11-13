@@ -3,6 +3,7 @@ using ZLogger;
 using Dapper;
 using Server.Interface;
 using Server.Model.User;
+using Server.Services;
 using Server.Table;
 
 namespace Server.Controllers;
@@ -27,31 +28,19 @@ public class LoginController:Controller
         //TODO DB에 아이디 있는지 확인
         //토큰인증 후 없으면 DB에서 아이디 존재유무확인 있으면 비밀번호 맞는지확인 
         var response = new PkLoginResponse();
-        response.Result = ErrorCode.NONE;
-        UserInfo? userInfo=null;
-        await using (var connection= await _database.GetDBConnection())
-        {
-           
-            try
-            {
-                userInfo = await connection.QuerySingleOrDefaultAsync<UserInfo>(
-                    "SELECT * FROM user_info WHERE Email=@email",
-                    new { email = request.id });
-            }
-            catch (Exception e)
-            {
-                _logger.ZLogDebug(e.Message);
-                response.Result = ErrorCode.NOID;
-            }
-            
-        }
+        var database = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         
+        var userInfoQuery = await database.SelectSingleUserInfo(request.id);
+        response.Result = userInfoQuery.Item1;
+        
+        var userInfo = userInfoQuery.Item2;
         if (userInfo == null)
         {
             response.Token = "";
             response.Result = ErrorCode.NOID;
             return response;
         }
+        
         var HashPw = HashFunctions.MakeHashingPassWord(userInfo.SaltValue, request.pw);
         if (userInfo.HashedPassword == HashPw)
         {

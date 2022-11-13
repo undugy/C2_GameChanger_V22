@@ -40,23 +40,6 @@ public class CreateAccount:Controller
                 response.Result = ErrorCode.ALREADY_EXIST;
             }
 
-            
-            
-            //TODO SetUpTableController쪽으로 옮기기
-            // UserTeam userTeam=new UserTeam(){}
-            // await using (var masterConnection = await _database.GetMasterDBConnection())
-            // {
-            //     int masterItemId =
-            //         masterConnection.QuerySingleOrDefault<int>("SELECT ItemId FROM item WHERE Name=@name",
-            //             new { name = "NAMECHANGETICKET" });
-            //     if (masterItemId == 0)
-            //     {
-            //         response.Result = ErrorCode.NOID;
-            //     }
-            // }
-            //
-            // UserItem=new UserItem(){}
-            
         }
         
         return response;
