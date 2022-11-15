@@ -28,8 +28,4 @@
       <Compile Remove="Controllers\CheckInController.cs" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Table" />
-    </ItemGroup>
-
 </Project>

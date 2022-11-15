@@ -50,6 +50,7 @@ public class LoginController:Controller
             if (await _redis.SetStringValue<string>(request.id, token))
             {
                 response.Token = token;
+                response.ID = userInfo.UserId;
                 return response;
             }
         }
@@ -68,6 +69,7 @@ public class PkLoginRequest
 
 public class PkLoginResponse
 {
+    public UInt32 ID { get; set; }
     public string Token { get; set; }
     public ErrorCode Result { get; set; }
 }

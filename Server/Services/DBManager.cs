@@ -14,6 +14,7 @@ namespace Server.Services;
 public class DBManager: IDBManager
 {
     private Dictionary<DBNumber,IDataBase> _dataBases;
+    private ILogger _logger;
     public static void Init(IConfiguration configuration)
     {
         GameDatabase.Init(configuration.GetSection("DBConnection")["v22"]);
@@ -21,9 +22,10 @@ public class DBManager: IDBManager
         
     }
 
-    public DBManager()
+    public DBManager(ILogger<DBManager>logger)
     {
         _dataBases = new Dictionary<DBNumber, IDataBase>();
+        _logger = logger;
         Regist(DBNumber.GameDatabase,new GameDatabase());
         Regist(DBNumber.MasterDatabase,new MasterDatabase());
     }
@@ -41,6 +43,7 @@ public class DBManager: IDBManager
     public T GetDatabase<T>(DBNumber dbNumber) where T : class
     {
         IDataBase dataBase;
+        
         if (!_dataBases.TryGetValue(dbNumber, out dataBase))
         {
             return default(T);

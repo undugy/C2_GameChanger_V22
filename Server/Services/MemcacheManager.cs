@@ -1,5 +1,12 @@
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Newtonsoft.Json;
+using Server.Model.User;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+
 namespace Server.Services;
 
 public class MemcacheManager
@@ -42,4 +49,6 @@ public class MemcacheManager
         
     }
     
+    
+
 }

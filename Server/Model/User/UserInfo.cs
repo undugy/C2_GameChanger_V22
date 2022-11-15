@@ -8,7 +8,7 @@ namespace Server.Model.User;
 
 public class UserInfo: IUserData
 {
-    public string UserId { get; set; }
+    public UInt32 UserId { get; set; }
     public string Email { get; set; }
     public string SaltValue { get; set; }
     public string HashedPassword { get; set; }

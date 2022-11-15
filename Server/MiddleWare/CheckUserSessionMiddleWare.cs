@@ -29,9 +29,9 @@ public class CheckUserSessionMiddleWare
 
             var obj = (JObject)JsonConvert.DeserializeObject(body);
 
-            var userID = (string)obj["ID"];
+            var userID = (UInt32)obj["ID"];
             var accessToken = (string)obj["Token"];
-            if (string.IsNullOrEmpty(userID))
+            if (null==userID)
             {
                 return;
             }
@@ -41,13 +41,13 @@ public class CheckUserSessionMiddleWare
                 return;
             }
             //TODO Redis 인증확인
-            var RedisToken = await _redis.GetStringValue<string>(userID+"Login");
+            var RedisToken = await _redis.GetStringValue<string>(userID.ToString());
             
             if (RedisToken.ToString() != accessToken)
             {
                 _logger.ZLogInformation($"{accessToken} token and {RedisToken.ToString()} is not matched");
             }
-            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body)); //이거 의미있는지?
+            
         }
 
         await _next(context);
