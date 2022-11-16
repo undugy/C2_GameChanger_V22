@@ -1,10 +1,9 @@
-using CloudStructures.Structures;
 using ZLogger;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Server.Interface;
 using Server.Model.User;
+using Server.Model.ReqRes;
 using Server.Services;
 using Server.Table;
 
@@ -13,19 +12,19 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CreateAccount:Controller
+public class CreateAccountController:Controller
 {
     private readonly ILogger _logger;
     private readonly IDBManager _database;
-    public CreateAccount(ILogger<CreateAccount> logger,IDBManager database)
+    public CreateAccountController(ILogger<CreateAccountController> logger,IDBManager database)
     {
         _logger = logger;
         _database = database;
     }
     [HttpPost]
-    public async Task<PkCreateAccountResponse> Post(PkCreateAccountRequest request)
+    public async Task<CreateAccountResponse> Post(CreateAccountRequset request)
     {
-        var response = new PkCreateAccountResponse();
+        var response = new CreateAccountResponse();
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
         var database = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var saltValue = HashFunctions.SaltString();
@@ -47,18 +46,3 @@ public class CreateAccount:Controller
     }
 }
 
-public class PkCreateAccountRequest
-{
-    public string ID { get; set; }
-    public string PW { get; set; }
-  
-}
-
-public class PkCreateAccountResponse
-{
-    public PkCreateAccountResponse()
-    {
-        Result = ErrorCode.NONE;
-    }
-    public ErrorCode Result { get; set; }
-}

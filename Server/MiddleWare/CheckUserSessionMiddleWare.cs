@@ -29,7 +29,7 @@ public class CheckUserSessionMiddleWare
 
             var obj = (JObject)JsonConvert.DeserializeObject(body);
 
-            var userID = (UInt32)obj["ID"];
+            var userID = (string)obj["ID"];
             var accessToken = (string)obj["Token"];
             if (null==userID)
             {
@@ -41,14 +41,15 @@ public class CheckUserSessionMiddleWare
                 return;
             }
             //TODO Redis 인증확인
-            var RedisToken = await _redis.GetStringValue<string>(userID.ToString());
+            var RedisToken = await _redis.GetStringValue<string>(userID);
             
             if (RedisToken.ToString() != accessToken)
             {
                 _logger.ZLogInformation($"{accessToken} token and {RedisToken.ToString()} is not matched");
             }
-            
+            context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
         }
+
 
         await _next(context);
         

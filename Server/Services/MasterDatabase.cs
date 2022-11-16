@@ -2,6 +2,7 @@ using Dapper;
 using MySqlConnector;
 using Server.Interface;
 using Server.Model.User;
+using Server.Table;
 
 namespace Server.Services;
 
@@ -70,5 +71,15 @@ public class MasterDatabase:IDataBase
         }
 
         return new Tuple<ErrorCode,uint>(errorCode,teamId);
+    }
+
+    public async Task<Tuple<ErrorCode, IEnumerable<TblItem>>> SelectAllItem()
+    {
+        await using (var connection = await GetDBConnection())
+        {
+            var a = await connection.QueryAsync<TblItem>("SELECT * FROM item");
+            var res = new Tuple<ErrorCode, IEnumerable<TblItem>>(ErrorCode.NONE, a);
+            return res;
+        }
     }
 }

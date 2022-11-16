@@ -7,7 +7,7 @@ namespace Server.Model.User;
 public class UserMail
 {
     public int MailId{ get; set; }
-    public int TeamId{ get; set; }
+    public int UserId{ get; set; }
     public string ContentType{ get; set; }
     public int ItemId{ get; set; }
     public int Quantity{ get; set; }
@@ -20,7 +20,7 @@ public class UserMail
         var obj =new
                 {
                     mailId=MailId,
-                    teamId=TeamId,
+                    teamId=UserId,
                     contentType=ContentType,
                     itemId=ItemId,
                     quantity=Quantity,

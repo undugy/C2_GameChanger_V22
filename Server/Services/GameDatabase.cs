@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Dapper;
 using MySqlConnector;
 using Server.Interface;
+using Server.Model.ReqRes;
 using Server.Model.User;
 
 namespace Server.Services;
@@ -52,6 +53,33 @@ public class GameDatabase:IDataBase
         }
 
         return new Tuple<ErrorCode,UserInfo>(errorCode,userInfo);
+    }
+
+    public async Task<SetUpResponse> MakeSetUpResponse(UInt32 userId)
+    {
+        var result = new SetUpResponse();
+        string query = "SELECT * FROM user_team WHERE UserId=@id;" +
+                       " SELECT * FROM user_mail WHERE UserId=@id";
+        await using (var connection = await GetDBConnection())
+        {
+            try
+            {
+                using(var multi= await connection.QueryMultipleAsync(query,new{id=userId}))
+                {
+                    result.TeamInfo = multi.Read<UserTeam>().Single();
+                    result.MailList= multi.Read<UserMail>().ToList();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                result.Result = ErrorCode.CREATE_FAIL;
+            }
+            
+        }
+
+        return result;
+
     }
 }
 

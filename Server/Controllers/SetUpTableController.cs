@@ -1,10 +1,10 @@
-using System.Runtime.InteropServices;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
 using Server.Model.User;
+using Server.Model.ReqRes;
 using Server.Services;
-using StackExchange.Redis;
+
 
 
 namespace Server.Controllers;
@@ -30,24 +30,23 @@ public class SetUpTableController : ControllerBase
 
     // 팀 정보,우편함,가방,카드정보(이거 일단 제외)
     [HttpPost]
-    public async Task<PkSetUpResponse> Post(PkSetUpRequest req)
+    public async Task<SetUpResponse> Post(SetUpRequest req)
     {
-
+        var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         //여기서 캐시데이터 확인 -> Redis 
         //없으면 DB에서 데이터 가져오기
         // 최종적으로 Response에
         //Team정보, 메일정보, 출첵정보
         //user_data와 register_result로 결과값 넣어주기
-        PkSetUpResponse response = new PkSetUpResponse();
-
+        SetUpResponse response = await gameDb.MakeSetUpResponse(req.ID);
         return response;
     }
 
     [HttpPost]
     [Route("InitializeTeam")]
-    public async Task<PkInitializeTeamResponse> Post(PkInitializeTeamRequest request)
+    public async Task<InitializeTeamResponse> Post(InitializeTeamRequest request)
     {
-        var response = new PkInitializeTeamResponse();
+        var response = new InitializeTeamResponse();
         var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var masterDb = _database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
 
@@ -62,7 +61,7 @@ public class SetUpTableController : ControllerBase
         var TeamIdResult = await masterDb.SelectSingleTeamId(request.TeamName);
         if (TeamIdResult.Item1 != ErrorCode.NONE)
         {
-            response.Result = ItemIdResult.Item1;
+            response.Result = TeamIdResult.Item1;
             return response;
         }
 
@@ -70,7 +69,7 @@ public class SetUpTableController : ControllerBase
 
         string nickName = request.TeamName + '#' + request.ID;
         UserTeam userTeam = new UserTeam(TeamIdResult.Item2, request.ID, nickName);
-        UserItem userItem = new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID };
+        UserItem userItem = new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" };
 
         await using (var connection = await gameDb.GetDBConnection())
         {
@@ -95,33 +94,5 @@ public class SetUpTableController : ControllerBase
         return response;
     }
 
-
+    
 }
-    public class PkSetUpRequest
-    {
-        public string ID { get; set; }
-        public string Token { get; set; }
-    }
-
-
-    public class PkInitializeTeamRequest
-    {
-        public UInt32 ID { get; set; }
-        public string TeamName { get; set; }
-        public string Token { get; set; }
-    }
-
-    public class PkInitializeTeamResponse
-    {
-        public PkInitializeTeamResponse()
-        {
-            Result = ErrorCode.NONE;
-        }
-
-        public ErrorCode Result { get; set; }
-    }
-
-    public class PkSetUpResponse
-    {
-        public Dictionary<string, object> Res = new Dictionary<string, object>();
-    }

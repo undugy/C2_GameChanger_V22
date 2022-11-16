@@ -6,16 +6,20 @@ namespace Server.Model.User;
 
 public class UserTeam:IUserData
 {
-    public  UInt32 TeamId { get; set; }
     public UInt32 UserId{ get; set; }
+    public  UInt32 TeamId { get; set; }
     public string? NickName{ get; set; }
     public UInt32 Point{ get; set; }
     public UInt32 Star{ get; set; }
     public UInt32 Ball{ get; set; }
     public UInt32 Exp{ get; set; }
-    public Int32 TeamLevel{ get; set; }
+    public UInt32 TeamLevel{ get; set; }
     public string Intro{ get; set; }
 
+    public UserTeam()
+    {
+        
+    }
 
     public UserTeam(UInt32 teamId,UInt32 userId, string?nickName)
     {
