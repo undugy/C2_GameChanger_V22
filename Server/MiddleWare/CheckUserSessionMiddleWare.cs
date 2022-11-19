@@ -11,8 +11,8 @@ public class CheckUserSessionMiddleWare
 {
     private readonly RequestDelegate _next;
     private readonly ILogger _logger;
-    private readonly IRedisManager _redis;
-    public CheckUserSessionMiddleWare(RequestDelegate next,ILogger<CheckUserSessionMiddleWare>logger,IRedisManager redis)
+    private readonly IRedisDatabase _redis;
+    public CheckUserSessionMiddleWare(RequestDelegate next,ILogger<CheckUserSessionMiddleWare>logger,IRedisDatabase redis)
     {
         _next = next;
         _logger = logger;

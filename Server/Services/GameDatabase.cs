@@ -54,12 +54,38 @@ public class GameDatabase:IDataBase
 
         return new Tuple<ErrorCode,UserInfo>(errorCode,userInfo);
     }
+    
+    public async Task<Tuple<ErrorCode,UserAttendance>> SelectSingleUserAttendance(UInt32 userId,string contentType)
+    {
+        
+        UserAttendance? userAttendance=null;
+        ErrorCode errorCode = ErrorCode.NONE;
+        await using (var connection= await GetDBConnection())
+        {
+           
+            try
+            {
+                userAttendance = await connection.QuerySingleOrDefaultAsync<UserAttendance>(
+                    "SELECT * FROM user_attendance WHERE UserId=@userid AND ContentType=@contenttype",
+                    new { userid = userId,contenttype=contentType });
+            }
+            catch (Exception e)
+            {
+                errorCode = ErrorCode.NOID;
+            }
+            
+        }
 
+        return new Tuple<ErrorCode,UserAttendance>(errorCode,userAttendance);
+    }
+    
+    
     public async Task<SetUpResponse> MakeSetUpResponse(UInt32 userId)
     {
         var result = new SetUpResponse();
         string query = "SELECT * FROM user_team WHERE UserId=@id;" +
-                       " SELECT * FROM user_mail WHERE UserId=@id";
+                       " SELECT * FROM user_mail WHERE UserId=@id;" +
+                       " SELECT * FROM user_attendance WHERE UserId=@id";
         await using (var connection = await GetDBConnection())
         {
             try
@@ -68,6 +94,8 @@ public class GameDatabase:IDataBase
                 {
                     result.TeamInfo = multi.Read<UserTeam>().Single();
                     result.MailList= multi.Read<UserMail>().ToList();
+                    result.CheckInList = multi.Read<UserAttendance>().ToList();
+
                 }
             }
             catch (Exception e)

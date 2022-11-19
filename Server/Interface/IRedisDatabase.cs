@@ -3,8 +3,9 @@ using CloudStructures.Structures;
 
 namespace Server.Interface;
 
-public interface IRedisManager
+public interface IRedisDatabase
 {
+    public RedisConnection GetConnection();
     public Task<RedisResult<T>> GetHashValue<T>(string key, string subKey);
     public Task<List<T>> GetListByRange<T>(string key);
     public RedisDictionary<T_KEY, T> GetHash<T_KEY, T>(string key)where T_KEY:notnull;

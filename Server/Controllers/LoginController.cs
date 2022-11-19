@@ -13,8 +13,8 @@ public class LoginController:Controller
 {
     private readonly ILogger _logger;
     private readonly IDBManager _database;
-    private readonly IRedisManager _redis;
-    public LoginController(ILogger<LoginController> logger,IDBManager database, IRedisManager redis)
+    private readonly IRedisDatabase _redis;
+    public LoginController(ILogger<LoginController> logger,IDBManager database, IRedisDatabase redis)
     {
         _logger = logger;
         _database = database;

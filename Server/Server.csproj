@@ -25,7 +25,6 @@
       <Compile Remove="QueryFormatter.cs" />
       <Compile Remove="Model\User\UserBag.cs" />
       <Compile Remove="Model\User\User.cs" />
-      <Compile Remove="Controllers\CheckInController.cs" />
     </ItemGroup>
 
 </Project>

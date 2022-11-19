@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddTransient<IDBManager, DBManager>();
-builder.Services.AddTransient<IRedisManager, RedisManager>();
+builder.Services.AddSingleton<IRedisDatabase, RedisDatabase>();
 
 builder.Host.ConfigureLogging(logging =>
 {
@@ -16,13 +16,14 @@ builder.Host.ConfigureLogging(logging =>
 
 });
 
-
+builder.Services.AddHostedService<DailyEvent>();
 
 MemcacheManager.Init();
 
 
 var app = builder.Build();
-
+RedisDatabase.Init(app.Configuration.GetSection("DBConnection")["Redis"]);
+DBManager.Init(app.Configuration);
 app.UseRouting();
 
 
@@ -33,6 +34,5 @@ app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 //app.UseAuthorization();
 
 //app.MapControllers();
-RedisManager.Init(app.Configuration.GetSection("DBConnection")["Redis"]);
-DBManager.Init(app.Configuration);
+
 app.Run();

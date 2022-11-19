@@ -5,9 +5,11 @@ using CloudStructures.Structures;
 using CsvHelper.Configuration.Attributes;
 using Microsoft.AspNetCore.Components.Web;
 using Server.Interface;
+using Server.Table;
+using ZLogger;
 
 namespace Server.Services;
-public class RedisManager:IRedisManager
+public class RedisDatabase:IRedisDatabase
 {
     private RedisConnection _redisConn;
     private const string _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -16,6 +18,7 @@ public class RedisManager:IRedisManager
 
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;
+    private readonly ILogger _logger;
     public static void Init(String address)
     {
         
@@ -24,9 +27,12 @@ public class RedisManager:IRedisManager
         
     }
 
-    public RedisManager()
+    public RedisDatabase(ILogger<RedisDatabase>logger,IDBManager database)
     {
         _redisConn = new RedisConnection(_config);
+        _logger = logger;
+        _logger.ZLogInformation("Redis생성자 호출");
+        
     }
     
     public async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)

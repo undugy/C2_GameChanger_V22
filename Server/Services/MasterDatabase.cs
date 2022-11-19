@@ -9,7 +9,7 @@ namespace Server.Services;
 public class MasterDatabase:IDataBase
 {
     private static string _connectionString;
-
+    
     public static void Init(string connectionString)
     {
         _connectionString = connectionString;
@@ -34,7 +34,6 @@ public class MasterDatabase:IDataBase
         int itemId = -1;
         await using (var connection= await GetDBConnection())
         {
-            
             try
             {
                 itemId = await
@@ -72,7 +71,30 @@ public class MasterDatabase:IDataBase
 
         return new Tuple<ErrorCode,uint>(errorCode,teamId);
     }
+    
+    public async Task<Tuple<ErrorCode,TblDailyCheckIn?>> SelectSingleDailyCheckIn(UInt32 day)
+    {
+        ErrorCode errorCode = ErrorCode.NONE;
+        TblDailyCheckIn? tblDailyCheckIn=null;
+        await using (var connection= await GetDBConnection())
+        {
+            try
+            {
+               tblDailyCheckIn = await
+                    connection.QuerySingleOrDefaultAsync<TblDailyCheckIn>("SELECT * FROM dailycheckinreward WHERE Day=@DAY",
+                        new { DAY = day });
+            }
+            catch (Exception e)
+            {
+                errorCode = ErrorCode.NOID;
+            }
+            
+        }
 
+        return new Tuple<ErrorCode,TblDailyCheckIn>(errorCode,tblDailyCheckIn);
+    }
+    
+    
     public async Task<Tuple<ErrorCode, IEnumerable<TblItem>>> SelectAllItem()
     {
         await using (var connection = await GetDBConnection())

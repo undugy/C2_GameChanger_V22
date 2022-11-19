@@ -1,5 +1,10 @@
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Server.Model.User;
+using Server.Interface;
+using Server.Model.ReqRes;
+using Server.Services;
+using Server.Table;
+using ZLogger;
 
 
 namespace Server.Controllers;
@@ -8,66 +13,51 @@ namespace Server.Controllers;
 public class CheckInController:Controller
 {
     private readonly ILogger _logger;
-
-    public CheckInController(ILogger<CheckInController> logger)
+    private readonly IDBManager _databaseManager;
+    private readonly IRedisDatabase _redisDatabase;
+    public CheckInController(ILogger<CheckInController> logger,
+        IDBManager databaseManager,IRedisDatabase redisDatabase)
     {
         _logger = logger;
+        _databaseManager = databaseManager;
+        _redisDatabase = redisDatabase;
     }
 
     public async Task<PkCheckInResponse> Post(PkCheckInRequest request)
     {
         var response = new PkCheckInResponse();
-        var user = new User(request.ID);
-        var userBag = new UserBag(request.ID);
-        UserItem? bagProduct=null;
-        if (!await user.LoadUserData())
+        var gameDatabase = _databaseManager.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
+        var masterDatabase = _databaseManager.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
+        var selectResult =await gameDatabase.SelectSingleUserAttendance(request.ID, request.ContentType);
+        if (selectResult.Item1 != ErrorCode.NONE)
         {
-            throw new Exception("초기화 실패");
+            _logger.ZLogDebug("출석체크 불러오기 실패");
         }
-        if(!await userBag.LoadUserBag())
+        
+        var userAttendance = selectResult.Item2;
+        var date = DateTime.Now;
+        // 접속날짜가 오늘이고 IsChecked가 false이면 
+        if ((date - userAttendance.RecvDate).Days == 0 && userAttendance.IsChecked==false) 
         {
-            throw new Exception("초기화 실패");
-        }
-        var userInfo = user.GetTable<UserInfo>();
-        if (userInfo.dailyCheck == false)
-        {
-            bagProduct = await userBag.DirectCheckIn(userInfo.checkDay);
-            if(bagProduct==null)
-            {
-                throw new Exception("아이템획득 실패");
-                
-            }
-            userInfo.dailyCheck = true;
-            await userInfo.SaveDataToRedis();
-            await userInfo.SaveDataToDB();
+            var reward = masterDatabase.SelectSingleDailyCheckIn(userAttendance.CheckDay);
+            userAttendance.IsChecked = true;
+            userAttendance.RecvDate=date;
+            userAttendance.CheckDay++;
+            //업데이트 
         }
 
-
-        if (bagProduct == null)
+        await using (var connection = await gameDatabase.GetDBConnection())
         {
-            response.Result = ErrorCode.ALREADY_GET;
-            return response;
+            var updateQuery = userAttendance.UpdateQuery();
+            var result= await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
         }
-        response.RewardName = TblDailyCheckIn.Get(userInfo.checkDay).ItemName;
-        response.RewardQuantity = bagProduct.quantity;
-        response.ReceiveDate=DateTime.Now.ToLocalTime();
-       
+        
         return response;
 
     }
-}
 
-public class PkCheckInResponse
-{
-    public string RewardName { get; set; }
-    public int RewardQuantity { get; set; }
-    public ErrorCode Result { get; set; }
-    public DateTime ReceiveDate { get; set; }
-}
-
-public class PkCheckInRequest
-{
-    public string ID { get; set; }
-    public string Token { get; set; }
+    
+    
     
 }
+

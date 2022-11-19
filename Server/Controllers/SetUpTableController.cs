@@ -17,11 +17,11 @@ public class SetUpTableController : ControllerBase
 {
     private readonly ILogger _logger;
     private readonly IDBManager _database;
-    private readonly IRedisManager _redis;
+    private readonly IRedisDatabase _redis;
 
     public SetUpTableController(ILogger<SetUpTableController> logger,
         IDBManager database,
-        IRedisManager redis)
+        IRedisDatabase redis)
     {
         _logger = logger;
         _database = database;
@@ -38,6 +38,10 @@ public class SetUpTableController : ControllerBase
         // 최종적으로 Response에
         //Team정보, 메일정보, 출첵정보
         //user_data와 register_result로 결과값 넣어주기
+        //출첵
+        // 이전에 받은날짜와 현재가 1일 이상 차이나고 IsChecked==false 이면
+        // 메일로 보내고 CheckDay++,RecvDate는 Today로 한다.
+        //RecvDate -> lastAccessDate Team 테이블쪽으로 옮기기 
         SetUpResponse response = await gameDb.MakeSetUpResponse(req.ID);
         return response;
     }
@@ -66,11 +70,11 @@ public class SetUpTableController : ControllerBase
         }
 
 
-
+        var date = DateTime.Today;
         string nickName = request.TeamName + '#' + request.ID;
         UserTeam userTeam = new UserTeam(TeamIdResult.Item2, request.ID, nickName);
         UserItem userItem = new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" };
-
+        UserAttendance userAttendance = new UserAttendance(request.ID, "dailyCheckIn", date);
         await using (var connection = await gameDb.GetDBConnection())
         {
             var insertQuery = userTeam.InsertQuery();
@@ -87,7 +91,12 @@ public class SetUpTableController : ControllerBase
                 response.Result = ErrorCode.NOID;
             }
 
-
+            insertQuery = userAttendance.InsertQuery();
+            affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
+            if (affectRow == 0)
+            {
+                response.Result = ErrorCode.NOID;
+            }
         }
 
 
