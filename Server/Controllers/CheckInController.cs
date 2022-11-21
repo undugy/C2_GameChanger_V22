@@ -22,26 +22,27 @@ public class CheckInController:Controller
         _databaseManager = databaseManager;
         _redisDatabase = redisDatabase;
     }
-
+    
     public async Task<PkCheckInResponse> Post(PkCheckInRequest request)
     {
         var response = new PkCheckInResponse();
         var gameDatabase = _databaseManager.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var masterDatabase = _databaseManager.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
-        var selectResult =await gameDatabase.SelectSingleUserAttendance(request.ID, request.ContentType);
-        if (selectResult.Item1 != ErrorCode.NONE)
+        var attendanceResult =await gameDatabase.SelectSingleUserAttendance(request.ID, request.ContentType);
+        var logResult = await gameDatabase.SelectUserLastAccess(request.ID);
+        if (attendanceResult.Item1 != ErrorCode.NONE)
         {
             _logger.ZLogDebug("출석체크 불러오기 실패");
         }
         
-        var userAttendance = selectResult.Item2;
+        var userAttendance = attendanceResult.Item2;
+        var lastAccess = logResult.Item2;
         var date = DateTime.Now;
         // 접속날짜가 오늘이고 IsChecked가 false이면 
-        if ((date - userAttendance.RecvDate).Days == 0 && userAttendance.IsChecked==false) 
+        if ((date - lastAccess).Days == 0 && userAttendance.IsChecked==false) 
         {
             var reward = masterDatabase.SelectSingleDailyCheckIn(userAttendance.CheckDay);
             userAttendance.IsChecked = true;
-            userAttendance.RecvDate=date;
             userAttendance.CheckDay++;
             //업데이트 
         }

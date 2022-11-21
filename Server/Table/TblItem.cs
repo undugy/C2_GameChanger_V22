@@ -8,12 +8,12 @@ namespace Server.Table;
 
 public class TblItem:IMasterTable
 {
-    public Int32 Id;
-    public string Name;
+    public UInt32 ItemId { get; set; }
+    public string Name { get; set; }
 
-    public override string ToString()
+    public string GetRedisKey()
     {
-        return "ItemTable";
+        return "master:item";
     }
 
     public  bool Load()

@@ -41,6 +41,7 @@ public class GameDatabase:IDataBase
            
             try
             {
+                
                 userInfo = await connection.QuerySingleOrDefaultAsync<UserInfo>(
                     "SELECT * FROM user_info WHERE Email=@Usermail",
                     new { Usermail = email });
@@ -54,7 +55,29 @@ public class GameDatabase:IDataBase
 
         return new Tuple<ErrorCode,UserInfo>(errorCode,userInfo);
     }
-    
+    public async Task<Tuple<ErrorCode,DateTime>> SelectUserLastAccess(UInt32 userId)
+    {
+        
+        DateTime lastAccess=DateTime.UnixEpoch;
+        ErrorCode errorCode = ErrorCode.NONE;
+        await using (var connection= await GetDBConnection())
+        {
+           
+            try
+            {
+                lastAccess = await connection.QuerySingleOrDefaultAsync<DateTime>(
+                    "SELECT LastAccess FROM user_log WHERE UserId=@id",
+                    new { id = userId });
+            }
+            catch (Exception e)
+            {
+                errorCode = ErrorCode.NOID;
+            }
+            
+        }
+
+        return new Tuple<ErrorCode,DateTime>(errorCode,lastAccess);
+    }
     public async Task<Tuple<ErrorCode,UserAttendance>> SelectSingleUserAttendance(UInt32 userId,string contentType)
     {
         

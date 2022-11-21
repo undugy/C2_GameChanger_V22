@@ -6,12 +6,12 @@ namespace Server.Table;
 
 public class TblLeague:IMasterTable
 {
-    public Int32 Id;
+    public UInt32 LeagueId { get; set; }
+    public string Name { get; set; }
 
-
-    public override string ToString()
+    public string GetRedisKey()
     {
-        return "LeagueTable";
+        return "master:league";
     }
 
     public  bool Load()

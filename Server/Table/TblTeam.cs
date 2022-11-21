@@ -5,13 +5,13 @@ namespace Server.Table;
 
 public class TblTeam:IMasterTable
 {
-    public Int32 Id;
-    public string Location;
-    public string Korea;
+    public Int32 TeamId { get; set; }
+    public string Name { get; set; }
+    public string Location { get; set; }
      
-    public override string ToString()
+    public string GetRedisKey()
     {
-        return "TeamTable";
+        return "master:team";
     }
 
     public  bool Load()

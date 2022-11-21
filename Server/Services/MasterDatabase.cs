@@ -14,7 +14,14 @@ public class MasterDatabase:IDataBase
     {
         _connectionString = connectionString;
     }
-    
+
+    public string GetAllMasterTable()
+    {
+        return "SELECT * FROM item; " +
+               "SELECT * FROM team;" +
+               "SELECT * FROM league;" +
+               "SELECT * FROM dailycheckinreward";
+    }
     public async Task<MySqlConnection>GetDBConnection()
     {
         

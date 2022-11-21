@@ -1,10 +1,7 @@
 using CloudStructures;
-using System.Security.Cryptography;
-using System.Text;
 using CloudStructures.Structures;
-using CsvHelper.Configuration.Attributes;
-using Microsoft.AspNetCore.Components.Web;
 using Server.Interface;
+using Dapper;
 using Server.Table;
 using ZLogger;
 
@@ -19,21 +16,61 @@ public class RedisDatabase:IRedisDatabase
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;
     private readonly ILogger _logger;
-    public static void Init(String address)
+    private readonly IDBManager _database;
+    public static void Init(IConfiguration configuration)
     {
-        
-        _config = new RedisConfig("basic", address);
-         
-        
+        _config = new RedisConfig("basic", configuration.GetSection("DBConnection")["Redis"]);
+      
     }
 
+    private async Task<ErrorCode> SetMasterTable<TKey, TVal>(string key, IEnumerable<KeyValuePair<TKey, TVal>> table)
+    {
+        var redisDict = GetHash<TKey, TVal>(key);
+        await redisDict.SetAsync(table);
+        return ErrorCode.NONE;
+    }
+
+    private async Task SetUpAllMasterData()
+    {
+        var masterDb = _database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
+        using (var connection = await masterDb.GetDBConnection()) 
+        {
+            try
+            {
+                var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable());
+                var items = multi.Read<TblItem>().ToDictionary(keySelector:m=>m.ItemId).AsEnumerable();
+                var teams = multi.Read<TblTeam>().ToDictionary(keySelector:m=>m.TeamId).AsEnumerable();
+                var leagues = multi.Read<TblLeague>().ToDictionary(keySelector:m=>m.LeagueId).AsEnumerable();
+                var checkIn= multi.Read<TblDailyCheckIn>().ToDictionary(keySelector:m=>m.Day).AsEnumerable();
+                multi.Dispose();
+                await SetMasterTable("item", items);
+                await SetMasterTable("team", teams);
+                await SetMasterTable("league", leagues);
+                await SetMasterTable("dailycheckinreward", checkIn);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
+        }
+    }
+    
+    
     public RedisDatabase(ILogger<RedisDatabase>logger,IDBManager database)
     {
         _redisConn = new RedisConnection(_config);
         _logger = logger;
+        _database = database;
         _logger.ZLogInformation("Redis생성자 호출");
-        
+        var t = Task.Run(async () =>
+        {
+            await SetUpAllMasterData();
+        });
+        t.Wait();
     }
+    
     
     public async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
     {
@@ -49,9 +86,9 @@ public class RedisDatabase:IRedisDatabase
         result.AddRange(redisList.ToList());
         return result;
     }
-    public  RedisDictionary<T_KEY,T>GetHash<T_KEY,T>(string key)
+    public  RedisDictionary<TKey,TVal>GetHash<TKey,TVal>(string key)
     {
-        var redisId = new RedisDictionary<T_KEY,T>(GetConnection(),key,null);
+        var redisId = new RedisDictionary<TKey,TVal>(GetConnection(),key,null);
         
         return redisId;
     }

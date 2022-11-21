@@ -1,18 +1,20 @@
+using Server.Interface;
+
 namespace Server.Model.User;
 
-public class UserAttendance
+public class UserAttendance:IUserData
 {
     public UInt32 UserId { get; set; }
     public string ContentType{ get; set; }
     public UInt32 CheckDay { get; set; }
-    public DateTime RecvDate { get; set; }
+
     public Boolean IsChecked  { get; set; }
 
-    public UserAttendance(UInt32 userId,string contentType,DateTime recvDate)
+    public UserAttendance(UInt32 userId,string contentType)
     {
         UserId = userId;
         ContentType = contentType;
-        RecvDate = recvDate;
+
     }
     
     
@@ -20,14 +22,13 @@ public class UserAttendance
     
     public (String,Object) InsertQuery()
     {
-        var query = "INSERT INTO user_attendance(UserId,ContentType,CheckDay,RecvDate,IsChecked) " +
-                    "VALUES(@userId,@contentType,@checkDay,@receiveDate,@isChecked)";
+        var query = "INSERT INTO user_attendance(UserId,ContentType,CheckDay,IsChecked) " +
+                    "VALUES(@userId,@contentType,@checkDay,@isChecked)";
         var obj =new
         {
             userId=UserId,
             contentType=ContentType,
             checkDay= CheckDay,
-            receiveDate=RecvDate,
             isChecked=IsChecked
         };
         return (query,obj);
@@ -38,7 +39,6 @@ public class UserAttendance
         
         var query = "UPDATE user_attendance SET " +
                     "CheckDay=@checkDay," +
-                    "RecvDate=@receiveDate, "+
                     "IsChecked=@isChecked "+
                     "WHERE UserId=@userId AND ContentType=@contentType";
         var obj=new
@@ -46,7 +46,6 @@ public class UserAttendance
             userId =UserId,
             contentType=ContentType,
             checkDay= CheckDay,
-            receiveDate=RecvDate,
             isChecked=IsChecked
         };
                 

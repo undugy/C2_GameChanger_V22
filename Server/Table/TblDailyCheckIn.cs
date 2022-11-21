@@ -5,14 +5,14 @@ namespace Server.Table;
 
 public class TblDailyCheckIn:IMasterTable
 {
-    public UInt32 Id;
-    public string ItemName;
-    public int Quantity;
+    public UInt32 Day { get; set; }
+    public UInt32 ItemId { get; set; }
+    public UInt32 Quantity { get; set; }
     
-     
-    public override string ToString()
+
+    public string GetRedisKey()
     {
-        return "DailyCheckInTable";
+        return "master:dailycheckinreward";
     }
 
     public bool Load()

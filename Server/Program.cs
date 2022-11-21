@@ -16,14 +16,13 @@ builder.Host.ConfigureLogging(logging =>
 
 });
 
-builder.Services.AddHostedService<DailyEvent>();
+//builder.Services.AddHostedService<DailyEvent>();
 
 MemcacheManager.Init();
 
-
 var app = builder.Build();
-RedisDatabase.Init(app.Configuration.GetSection("DBConnection")["Redis"]);
 DBManager.Init(app.Configuration);
+RedisDatabase.Init(app.Configuration);
 app.UseRouting();
 
 
