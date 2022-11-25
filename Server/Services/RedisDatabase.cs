@@ -51,7 +51,7 @@ public class RedisDatabase:IRedisDatabase
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                _logger.ZLogInformation(e.Message);
             }
             
         }
@@ -72,11 +72,12 @@ public class RedisDatabase:IRedisDatabase
     }
     
     
-    public async Task<RedisResult<T>>GetHashValue<T>(string key,string subKey)
+    public async Task<T>GetHashValue<TKey,T>(string key,TKey subKey)where TKey:notnull
     {
-        var redisId = new RedisDictionary<string,T>(GetConnection(),key,null);
+        var redisId = new RedisDictionary<TKey,T>(GetConnection(),key,null);
         
-        return await redisId.GetAsync(subKey);
+        var res= await redisId.GetAsync(subKey);
+        return res.Value;
     }
     public async Task<List<T>>GetListByRange<T>(string key)
     {

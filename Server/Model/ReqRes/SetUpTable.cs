@@ -13,6 +13,6 @@ public class SetUpResponse
 {
     public UserTeam TeamInfo { get; set; }
     public List<UserMail>MailList { get; set; }
-    public List<UserAttendance>CheckInList { get; set; }
+    public List<UserAttendance> CheckInList { get; set; }
     public ErrorCode Result = ErrorCode.NONE;
 }

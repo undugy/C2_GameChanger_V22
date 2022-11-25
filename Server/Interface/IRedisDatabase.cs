@@ -6,7 +6,7 @@ namespace Server.Interface;
 public interface IRedisDatabase
 {
     public RedisConnection GetConnection();
-    public Task<RedisResult<T>> GetHashValue<T>(string key, string subKey);
+    public Task<T> GetHashValue<Tkey,T>(string key, Tkey subKey)where Tkey:notnull;
     public Task<List<T>> GetListByRange<T>(string key);
     public RedisDictionary<T_KEY, T> GetHash<T_KEY, T>(string key)where T_KEY:notnull;
     public Task<RedisSortedSet<T>> GetSortedSet<T>(string key);

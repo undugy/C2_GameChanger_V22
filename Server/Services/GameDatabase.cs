@@ -102,7 +102,29 @@ public class GameDatabase:IDataBase
         return new Tuple<ErrorCode,UserAttendance>(errorCode,userAttendance);
     }
     
-    
+    public async Task<ErrorCode> UpdateUserLastAccess(UInt32 userId,DateTime lastAccess)
+    {
+        
+        
+        ErrorCode errorCode = ErrorCode.NONE;
+        await using (var connection= await GetDBConnection())
+        {
+           
+            try
+            {
+                var result= await connection.ExecuteAsync(
+                    "UPDATE user_log SET LastAccess=@access WHERE UserId=@id",
+                    new { id = userId, access=lastAccess });
+            }
+            catch (Exception e)
+            {
+                errorCode = ErrorCode.NOID;
+            }
+            
+        }
+
+        return errorCode;
+    }
     public async Task<SetUpResponse> MakeSetUpResponse(UInt32 userId)
     {
         var result = new SetUpResponse();

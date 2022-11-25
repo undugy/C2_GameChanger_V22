@@ -4,29 +4,28 @@ using Server.Services;
 
 namespace Server.Model.User;
 
-public class UserMail
+public class UserMail:IUserData
 {
     public int MailId{ get; set; }
-    public int UserId{ get; set; }
+    public UInt32 UserId{ get; set; }
     public string ContentType{ get; set; }
-    public int ItemId{ get; set; }
-    public int Quantity{ get; set; }
+    public UInt32 ItemId{ get; set; }
+    public UInt32 Quantity{ get; set; }
     public DateTime ReceiveDate{ get; set; }
     
-    public Tuple<String,Object> InsertQuery()
+    public (String,Object) InsertQuery()
     {
-        var query = "INSERT INTO user_mail(MailId,TeamId,ContentType,ItemId,Quantity,ReceiveDate) " +
-                                     "VALUES(@userId,@teamId,@contentType,@itemId,@quantity,@receiveDate)";
+        var query = "INSERT INTO user_mail(UserId,ContentType,ItemId,Quantity,ReceiveDate) " +
+                                     "VALUES(@userId,@contentType,@itemId,@quantity,@receiveDate)";
         var obj =new
                 {
-                    mailId=MailId,
-                    teamId=UserId,
+                    userId=UserId,
                     contentType=ContentType,
                     itemId=ItemId,
                     quantity=Quantity,
                     receiveDate=ReceiveDate
                 };
-        return new Tuple<string, object>(query,obj);
+        return (query,obj);
     }
 
 

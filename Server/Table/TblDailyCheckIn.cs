@@ -15,7 +15,7 @@ public class TblDailyCheckIn:IMasterTable
         return "master:dailycheckinreward";
     }
 
-    public bool Load()
+    public  bool Load()
     { 
         Dictionary<int, TblDailyCheckIn> tblDictionary = new Dictionary<int, TblDailyCheckIn>();
        

@@ -6,7 +6,7 @@ using Server.Model.User;
 using Server.Model.ReqRes;
 using Server.Services;
 
-
+using Server.Table;
 
 namespace Server.Controllers;
 
@@ -35,25 +35,47 @@ public class SetUpUserDataController : ControllerBase
     {
         var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var lastAccess = await gameDb.SelectUserLastAccess(req.ID);
-        var userAttendance = await gameDb.SelectSingleUserAttendance(req.ID, "dailyCheckIn");
+        var attendanceResult = await gameDb.SelectSingleUserAttendance(req.ID, "dailyCheckIn");
         var nowDate = DateTime.Today;
-        //여기서 캐시데이터 확인 -> Redis 
-        //없으면 DB에서 데이터 가져오기
+        var userDataList = new Dictionary<string,object>();
+        //DB에서 데이터 가져오기
         // 최종적으로 Response에
         //Team정보, 메일정보, 출첵정보
-        //user_data와 register_result로 결과값 넣어주기
         //출첵
         // 이전에 받은날짜와 현재가 1일 이상 차이나고 IsChecked==false 이면
         // 메일로 보내고 CheckDay++,RecvDate는 Today로 한다.
-        if ((nowDate - lastAccess.Item2).Days >= 1 && userAttendance.Item2.IsChecked == false)
+        if ((nowDate - lastAccess.Item2).Days >= 1 && attendanceResult.Item2.IsChecked == false)
         {
+            var userAttendance = attendanceResult.Item2;
+            var dailyReward = await _redis.GetHashValue<uint, TblDailyCheckIn>("dailycheckinreward", userAttendance.CheckDay);
+            var userMail = new UserMail() { ItemId = dailyReward.ItemId,Quantity = dailyReward.Quantity,
+                ContentType = "dailycheckinreward",ReceiveDate = nowDate, UserId = req.ID };
+            var query = userMail.InsertQuery();
             //여기서 메일로 쏴준다.
+            userDataList.Add(query.Item1,query.Item2);
             //checkday늘려주기
+            userAttendance.CheckDay++;
+            query = userAttendance.UpdateQuery();
+            userDataList.Add(query.Item1,query.Item2);
+
         }
         
-        //여기서 last Access 업데이트 
-        
         SetUpResponse response = await gameDb.MakeSetUpResponse(req.ID);
+        response.Result = await gameDb.UpdateUserLastAccess(req.ID, nowDate);
+        //여기서 last Access 업데이트 
+        await using (var connection = await gameDb.GetDBConnection())
+        {
+            foreach (var data in userDataList.ToList())
+            {
+                
+                var affectRow = await connection.ExecuteAsync(data.Key, data.Value);
+                if (affectRow == 0)
+                {
+                    response.Result = ErrorCode.NOID;
+                    _logger.LogWarning("Insert Failed ErrorCode:{0}",ErrorCode.NOID);
+                }
+            }
+        }
         return response;
     }
 
@@ -100,26 +122,12 @@ public class SetUpUserDataController : ControllerBase
                     _logger.LogWarning("Insert Failed ErrorCode:{0}",ErrorCode.NOID);
                 }
             }
-            
-
-            //insertQuery = userItem.InsertQuery();
-            //affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
-            //if (affectRow == 0)
-            //{
-            //    response.Result = ErrorCode.NOID;
-            //}
-//
-            //insertQuery = userAttendance.InsertQuery();
-            //affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
-            //if (affectRow == 0)
-            //{
-            //    response.Result = ErrorCode.NOID;
-            //}
         }
 
 
         return response;
     }
 
+    
     
 }
