@@ -23,7 +23,8 @@ public class UserInfo: IUserData
 
     public (String,Object) InsertQuery()
     {
-        var query = "INSERT IGNORE INTO user_info(Email,HashedPassword,SaltValue) Values(@email,@pw,@salt) ";
+        var query = "INSERT  INTO user_info(Email,HashedPassword,SaltValue)"+
+                    " SELECT @email,@pw,@salt FROM DUAL WHERE NOT EXISTS(SELECT * FROM user_info WHERE Email=@email)";
         var obj= new
                     {
                         email=Email,

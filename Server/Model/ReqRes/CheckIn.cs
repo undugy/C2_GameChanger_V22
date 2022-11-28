@@ -1,6 +1,6 @@
 namespace Server.Model.ReqRes;
 
-public class PkCheckInResponse
+public class CheckInResponse
 {
     public string RewardName { get; set; }
     public UInt32 RewardQuantity { get; set; }
@@ -8,7 +8,7 @@ public class PkCheckInResponse
     public DateTime ReceiveDate { get; set; }
 }
 
-public class PkCheckInRequest
+public class CheckInRequest
 {
     public UInt32 ID { get; set; }
     public string Token { get; set; }

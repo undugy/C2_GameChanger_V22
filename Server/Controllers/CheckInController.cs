@@ -24,9 +24,9 @@ public class CheckInController:Controller
         _redisDatabase = redisDatabase;
     }
     
-    public async Task<PkCheckInResponse> Post(PkCheckInRequest request)
+    public async Task<CheckInResponse> Post(CheckInRequest request)
     {
-        var response = new PkCheckInResponse();
+        var response = new CheckInResponse();
         var gameDatabase = _databaseManager.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var attendanceResult =await gameDatabase.SelectSingleUserAttendance(request.ID, request.ContentType);
         var logResult = await gameDatabase.SelectUserLastAccess(request.ID);

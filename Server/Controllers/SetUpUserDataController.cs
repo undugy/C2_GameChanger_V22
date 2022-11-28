@@ -45,22 +45,16 @@ public class SetUpUserDataController : ControllerBase
         }
         var nowDate = DateTime.Today;
         var userDataList = new Dictionary<string,object>();
-        //DB에서 데이터 가져오기
-        // 최종적으로 Response에
-        //Team정보, 메일정보, 출첵정보
-        //출첵
-        // 이전에 받은날짜와 현재가 1일 이상 차이나고 IsChecked==false 이면
-        // 메일로 보내고 CheckDay++,RecvDate는 Today로 한다.
+       
         if ((nowDate - lastAccess.Item2).Days >= 1 && attendanceResult.Item2.IsChecked == false)
         {
             var userAttendance = attendanceResult.Item2;
             var dailyReward = await _redis.GetHashValue<uint, TblDailyCheckIn>("dailycheckinreward", userAttendance.CheckDay);
             var userMail = new UserMail() { ItemId = dailyReward.ItemId,Quantity = dailyReward.Quantity,
                 ContentType = "dailycheckinreward",ReceiveDate = nowDate, UserId = req.ID };
+          
             var query = userMail.InsertQuery();
-            //여기서 메일로 쏴준다.
             userDataList.Add(query.Item1,query.Item2);
-            //checkday늘려주기
             userAttendance.CheckDay++;
             query = userAttendance.UpdateQuery();
             userDataList.Add(query.Item1,query.Item2);
@@ -69,7 +63,7 @@ public class SetUpUserDataController : ControllerBase
         
         response = await gameDb.MakeSetUpResponse(req.ID);
         response.Result = await gameDb.UpdateUserLastAccess(req.ID, nowDate);
-        //여기서 last Access 업데이트 
+
         await using (var connection = await gameDb.GetDBConnection())
         {
             foreach (var data in userDataList.ToList())

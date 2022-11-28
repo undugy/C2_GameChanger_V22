@@ -2,7 +2,6 @@ using CloudStructures;
 using CloudStructures.Structures;
 using Server.Interface;
 using Dapper;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Server.Table;
 using ZLogger;
 
@@ -10,9 +9,6 @@ namespace Server.Services;
 public class RedisDatabase:IRedisDatabase
 {
     private RedisConnection _redisConn;
-    private const string _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-    //TODO 레디스의 Hash 자료구조를 이용해 유저정보 저장하기 
 
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;

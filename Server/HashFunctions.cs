@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Server.Table;
+namespace Server;
 
 public static class HashFunctions
 {

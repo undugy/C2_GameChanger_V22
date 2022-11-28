@@ -158,7 +158,7 @@ public class GameDatabase:IDataBase
 
     }
 
-    public async Task<PkCheckInResponse> MakeCheckInResponse(UInt32 id,UInt32 itemId,uint quantity,string itemName)
+    public async Task<CheckInResponse> MakeCheckInResponse(UInt32 id,UInt32 itemId,uint quantity,string itemName)
     {
         await using (var connection = await GetDBConnection())
         {
@@ -184,10 +184,138 @@ public class GameDatabase:IDataBase
             }
         }
 
-        return new PkCheckInResponse() { RewardName = itemName, RewardQuantity = quantity };
+        return new CheckInResponse() { RewardName = itemName, RewardQuantity = quantity };
 
 
 
+    }
+
+
+    public async Task<MailListResponse> GetMailList(MailListRequest request)
+    {
+        var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE UserId=@userId";
+        var response = new MailListResponse();
+        await using (var connection = await GetDBConnection())
+        {
+            var userMails = await connection.QueryAsync<UserMail>(mailSelectQuery, new{userId=request.ID});
+            if (userMails == null)
+            {
+                response.Result = ErrorCode.NOID;
+                return response;
+            }
+
+            response.MailList = userMails.ToList();
+            return response;
+        }
+    }
+
+    public async Task<MailResponse> ReceiveMail(MailRequest request)
+    {
+
+        var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE MailId=@mailID";
+        var mailDeleteQuery = "DELETE  FROM user_mail WHERE MailId=@mailID";
+        var mailIdObject = new { mailID = request.MailIndex };
+        var response = new MailResponse();
+        await using (var connection = await GetDBConnection())
+        {
+            try
+            {
+                var userMail = await connection.QuerySingleOrDefaultAsync<UserMail>(mailSelectQuery,mailIdObject );
+                if (userMail == null)
+                {
+                    response.Result = ErrorCode.NOID;
+                    return response;
+                }
+                
+                var userItem = new UserItem()
+                    { ItemId = userMail.ItemId,UserId = request.ID,Kind = CheckItemKind(userMail.ItemId), Quantity = userMail.Quantity };
+                var updateQuery = userItem.UpdateQuery();
+                var affectRow = await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
+                if (affectRow == 0)
+                {
+                    response.Result = ErrorCode.CREATE_FAIL;
+                    return response;
+                }
+                affectRow = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
+                if (affectRow == 0)
+                {
+                    throw new Exception("mail delete fail!");
+                }
+
+                response.ItemId = userMail.ItemId;
+                response.Quantity = userMail.Quantity;
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+            
+        }
+
+        return response;
+    }
+
+    public async Task<ReceiveAllMailResponse> ReceiveAllMail(ReceiveAllMailRequest request)
+    {
+
+        var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE UserId=@userId";
+        var mailDeleteQuery = "DELETE  FROM user_mail WHERE UserId=@userId";
+        var mailIdObject = new { userId = request.ID };
+        var response = new ReceiveAllMailResponse();
+        await using (var connection = await GetDBConnection())
+        {
+            try
+            {
+                var userMails = await connection.QueryAsync<UserMail>(mailSelectQuery,mailIdObject );
+                if (userMails == null)
+                {
+                    response.Result = ErrorCode.NOID;
+                    return response;
+                }
+
+                foreach (var mail in userMails)
+                {
+                    var userItem = new UserItem()
+                        { ItemId = mail.ItemId,UserId = request.ID,Kind = CheckItemKind(mail.ItemId), Quantity = mail.Quantity };
+                    var updateQuery = userItem.UpdateQuery();
+                    var affectRow = await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
+                    if (affectRow == 0)
+                    {
+                        response.Result = ErrorCode.CREATE_FAIL;
+                        return response;
+                    }
+                    
+                    response.ReceiveItemList.Add(mail.ItemId,mail.Quantity);
+                }
+                var deleteCount = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
+                if (deleteCount == 0)
+                {
+                    throw new Exception("mail delete fail!");
+                }
+
+                
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+            
+        }
+
+        return response;
+    }
+    public string CheckItemKind(UInt32 itemId)
+    {
+        if (itemId <= 3)
+        {
+            return "wealth";
+        }
+
+        return "item";
     }
 }
 
