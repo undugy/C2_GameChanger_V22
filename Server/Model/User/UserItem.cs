@@ -6,10 +6,10 @@ namespace Server.Model.User;
 
 public class UserItem:IUserData
 {
-    public int ItemId{ get; set; }
+    public UInt32 ItemId{ get; set; }
     public UInt32 UserId{ get; set; }
-    public int Quantity{ get; set; }
-    public string Kind{ get; set; }
+    public UInt32 Quantity{ get; set; }
+    public string? Kind{ get; set; }
 
     
     public (String,Object) InsertQuery()
@@ -30,12 +30,17 @@ public class UserItem:IUserData
     public (String,Object) UpdateQuery()
     {
         
-        var query = "UPDATE user_bag SET " +
-                             "ItemId=@itemId," +
-                             "UserId=@userId," +
-                             "Quantity=@quantity,"+
-                             "Kind=@kind "+
-                             "WHERE TeamId=@teamId AND ItemId=@itemId";
+       // var query = "UPDATE user_bag SET " +
+       //                      "ItemId=@itemId," +
+       //                      "UserId=@userId," +
+       //                      "Quantity=@quantity,"+
+       //                      "Kind=@kind "+
+       //                      "WHERE UserId=@userId AND ItemId=@itemId";
+
+        var query = "INSERT INTO user_bag(UserId,ItemId,Quantity,Kind) " +
+                "VALUES (@itemId,@userId,@quantity,@kind)" +
+                "ON DUPLICATE KEY UPDATE Quantity=Quantity+@quantity";
+        
         var obj=new
                 {
                     itemId = ItemId,

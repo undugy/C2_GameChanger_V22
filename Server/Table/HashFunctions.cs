@@ -8,7 +8,7 @@ public static class HashFunctions
     private static string  _allowableCharacters = "abcdefghijklmnopqrstuvwxyz0123456789";
     public static string  MakeHashingPassWord(string saltValue, string pw)//임시
     {
-        var sha = new SHA256Managed();
+        var sha = SHA256.Create();
         byte[] hash = sha.ComputeHash(Encoding.ASCII.GetBytes(saltValue + pw));
         StringBuilder stringBuilder = new StringBuilder();
         foreach (byte b in hash)

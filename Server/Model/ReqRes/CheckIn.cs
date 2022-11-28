@@ -3,7 +3,7 @@ namespace Server.Model.ReqRes;
 public class PkCheckInResponse
 {
     public string RewardName { get; set; }
-    public int RewardQuantity { get; set; }
+    public UInt32 RewardQuantity { get; set; }
     public ErrorCode Result { get; set; }
     public DateTime ReceiveDate { get; set; }
 }

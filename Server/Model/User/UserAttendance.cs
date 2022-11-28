@@ -8,16 +8,20 @@ public class UserAttendance:IUserData
     public string ContentType{ get; set; }
     public UInt32 CheckDay { get; set; }
 
-    public Boolean IsChecked  { get; set; }
+    public Boolean IsChecked { get; set; }
 
     public UserAttendance(UInt32 userId,string contentType)
     {
         UserId = userId;
+        CheckDay = 1;
         ContentType = contentType;
 
     }
-    
-    
+
+    public UserAttendance()
+    {
+        
+    }
     
     
     public (String,Object) InsertQuery()

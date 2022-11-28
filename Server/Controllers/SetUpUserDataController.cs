@@ -33,9 +33,16 @@ public class SetUpUserDataController : ControllerBase
     [HttpPost]
     public async Task<SetUpResponse> Post(SetUpRequest req)
     {
+        SetUpResponse response;
         var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         var lastAccess = await gameDb.SelectUserLastAccess(req.ID);
         var attendanceResult = await gameDb.SelectSingleUserAttendance(req.ID, "dailyCheckIn");
+       
+        if (attendanceResult.Item1 == ErrorCode.NOT_INIT)
+        {
+            response= new SetUpResponse(){Result = ErrorCode.NOT_INIT};
+            return response;
+        }
         var nowDate = DateTime.Today;
         var userDataList = new Dictionary<string,object>();
         //DB에서 데이터 가져오기
@@ -60,7 +67,7 @@ public class SetUpUserDataController : ControllerBase
 
         }
         
-        SetUpResponse response = await gameDb.MakeSetUpResponse(req.ID);
+        response = await gameDb.MakeSetUpResponse(req.ID);
         response.Result = await gameDb.UpdateUserLastAccess(req.ID, nowDate);
         //여기서 last Access 업데이트 
         await using (var connection = await gameDb.GetDBConnection())

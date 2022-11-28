@@ -24,13 +24,13 @@ public class LoginController:Controller
     [HttpPost]
     public async Task<LoginResponse> Post(LoginRequset request)
     {
-        _logger.ZLogInformation($"[Request Login] ID:{request.id}, PW:{request.pw}");
+        _logger.ZLogInformation($"[Request Login] ID:{request.ID}, PW:{request.PW}");
         //TODO DB에 아이디 있는지 확인
         //토큰인증 후 없으면 DB에서 아이디 존재유무확인 있으면 비밀번호 맞는지확인 
         var response = new LoginResponse();
         var database = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
         
-        var userInfoQuery = await database.SelectSingleUserInfo(request.id);
+        var userInfoQuery = await database.SelectSingleUserInfo(request.ID);
         response.Result = userInfoQuery.Item1;
         
         var userInfo = userInfoQuery.Item2;
@@ -41,7 +41,7 @@ public class LoginController:Controller
             return response;
         }
         
-        var HashPw = HashFunctions.MakeHashingPassWord(userInfo.SaltValue, request.pw);
+        var HashPw = HashFunctions.MakeHashingPassWord(userInfo.SaltValue, request.PW);
         if (userInfo.HashedPassword == HashPw)
         {
             //토큰 등록

@@ -8,6 +8,8 @@ public enum ErrorCode:Int32
     
     ALREADY_EXIST=10,
     CREATE_FAIL,
+    NOT_INIT,
+    
     
     ALREADY_GET=100
 }

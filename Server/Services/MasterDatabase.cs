@@ -35,26 +35,27 @@ public class MasterDatabase:IDataBase
         return connection;
     }
     
-    public async Task<Tuple<ErrorCode,int>> SelectSingleItemId(string itemName)
+    public async Task<Tuple<ErrorCode,uint>> SelectSingleItemId(string itemName)
     {
         ErrorCode errorCode = ErrorCode.NONE;
-        int itemId = -1;
+        uint itemId=0;
         await using (var connection= await GetDBConnection())
         {
             try
             {
                 itemId = await
-                    connection.QuerySingleOrDefaultAsync<int>("SELECT ItemId FROM item WHERE Name=@name",
+                    connection.QuerySingleOrDefaultAsync<uint>("SELECT ItemId FROM item WHERE Name=@name",
                         new { name = itemName });
             }
             catch (Exception e)
             {
+                
                 errorCode = ErrorCode.NOID;
             }
             
         }
 
-        return new Tuple<ErrorCode,int>(errorCode,itemId);
+        return new Tuple<ErrorCode,uint>(errorCode,itemId);
     }
     
     public async Task<Tuple<ErrorCode,uint>> SelectSingleTeamId(string teamName)
@@ -98,7 +99,7 @@ public class MasterDatabase:IDataBase
             
         }
 
-        return new Tuple<ErrorCode,TblDailyCheckIn>(errorCode,tblDailyCheckIn);
+        return new Tuple<ErrorCode,TblDailyCheckIn?>(errorCode,tblDailyCheckIn);
     }
     
     

@@ -2,8 +2,8 @@ namespace Server.Model.ReqRes;
 
 public class LoginRequset
 {
-    public string id { get; set; }
-    public string pw { get; set; }
+    public string ID { get; set; }
+    public string PW { get; set; }
 }
 
 public class LoginResponse

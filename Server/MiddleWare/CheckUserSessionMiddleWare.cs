@@ -24,10 +24,10 @@ public class CheckUserSessionMiddleWare
         if (context.Request.Path != "/login" &&
             context.Request.Path != "/CreateAccount")
         {
-            StreamReader bodystream = new StreamReader(context.Request.Body, Encoding.UTF8);
-            string body = bodystream.ReadToEndAsync().Result;
+            StreamReader bodyStream = new StreamReader(context.Request.Body, Encoding.UTF8);
+            string body = bodyStream.ReadToEndAsync().Result;
 
-            var obj = (JObject)JsonConvert.DeserializeObject(body);
+            var obj = JsonConvert.DeserializeObject(body) as JObject;
 
             var userID = (string)obj["ID"];
             var accessToken = (string)obj["Token"];
@@ -41,11 +41,11 @@ public class CheckUserSessionMiddleWare
                 return;
             }
             //TODO Redis 인증확인
-            var RedisToken = await _redis.GetStringValue<string>(userID);
+            var redisToken = await _redis.GetStringValue<string>(userID);
             
-            if (RedisToken.ToString() != accessToken)
+            if (redisToken != accessToken)
             {
-                _logger.ZLogInformation($"{accessToken} token and {RedisToken.ToString()} is not matched");
+                _logger.ZLogInformation($"{accessToken} token and {redisToken} is not matched");
             }
             context.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(body));
         }

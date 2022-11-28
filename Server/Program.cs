@@ -16,9 +16,6 @@ builder.Host.ConfigureLogging(logging =>
 
 });
 
-//builder.Services.AddHostedService<DailyEvent>();
-
-MemcacheManager.Init();
 
 var app = builder.Build();
 DBManager.Init(app.Configuration);
@@ -28,10 +25,6 @@ app.UseRouting();
 
 app.UseCheckUserSessionMiddleWare();
 app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-//app.UseHttpsRedirection();
 
-//app.UseAuthorization();
-
-//app.MapControllers();
 
 app.Run();

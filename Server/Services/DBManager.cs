@@ -42,7 +42,7 @@ public class DBManager: IDBManager
 
     public T GetDatabase<T>(DBNumber dbNumber) where T : class
     {
-        IDataBase dataBase;
+        IDataBase? dataBase;
         
         if (!_dataBases.TryGetValue(dbNumber, out dataBase))
         {

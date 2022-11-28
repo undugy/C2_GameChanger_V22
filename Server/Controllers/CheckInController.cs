@@ -15,6 +15,7 @@ public class CheckInController:Controller
     private readonly ILogger _logger;
     private readonly IDBManager _databaseManager;
     private readonly IRedisDatabase _redisDatabase;
+    
     public CheckInController(ILogger<CheckInController> logger,
         IDBManager databaseManager,IRedisDatabase redisDatabase)
     {
@@ -27,7 +28,6 @@ public class CheckInController:Controller
     {
         var response = new PkCheckInResponse();
         var gameDatabase = _databaseManager.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
-        var masterDatabase = _databaseManager.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
         var attendanceResult =await gameDatabase.SelectSingleUserAttendance(request.ID, request.ContentType);
         var logResult = await gameDatabase.SelectUserLastAccess(request.ID);
         if (attendanceResult.Item1 != ErrorCode.NONE)
@@ -41,12 +41,20 @@ public class CheckInController:Controller
         // 접속날짜가 오늘이고 IsChecked가 false이면 
         if ((date - lastAccess).Days == 0 && userAttendance.IsChecked==false) 
         {
-            var reward = masterDatabase.SelectSingleDailyCheckIn(userAttendance.CheckDay);
-            userAttendance.IsChecked = true;
+            var dailyReward = await _redisDatabase.GetHashValue<uint, TblDailyCheckIn>("dailycheckinreward", 
+                userAttendance.CheckDay);
+            var masterItem = await _redisDatabase.GetHashValue<uint, TblItem>("item", dailyReward.ItemId);
+            userAttendance.IsChecked =true;
+            response = await gameDatabase.MakeCheckInResponse(request.ID, dailyReward.ItemId, dailyReward.Quantity,
+                masterItem.Name);
+            response.ReceiveDate = date;
+            response.Result = ErrorCode.NONE;
+            
             userAttendance.CheckDay++;
             //업데이트 
         }
 
+        
         await using (var connection = await gameDatabase.GetDBConnection())
         {
             var updateQuery = userAttendance.UpdateQuery();
@@ -56,9 +64,5 @@ public class CheckInController:Controller
         return response;
 
     }
-
-    
-    
-    
 }
 

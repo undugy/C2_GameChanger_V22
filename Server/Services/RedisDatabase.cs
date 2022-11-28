@@ -2,6 +2,7 @@ using CloudStructures;
 using CloudStructures.Structures;
 using Server.Interface;
 using Dapper;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Server.Table;
 using ZLogger;
 
@@ -20,10 +21,10 @@ public class RedisDatabase:IRedisDatabase
     public static void Init(IConfiguration configuration)
     {
         _config = new RedisConfig("basic", configuration.GetSection("DBConnection")["Redis"]);
-      
+        
     }
 
-    private async Task<ErrorCode> SetMasterTable<TKey, TVal>(string key, IEnumerable<KeyValuePair<TKey, TVal>> table)
+    private async Task<ErrorCode> SetMasterTable<TKey, TVal>(string key, IEnumerable<KeyValuePair<TKey, TVal>> table)where TKey:notnull
     {
         var redisDict = GetHash<TKey, TVal>(key);
         await redisDict.SetAsync(table);
@@ -79,41 +80,19 @@ public class RedisDatabase:IRedisDatabase
         var res= await redisId.GetAsync(subKey);
         return res.Value;
     }
-    public async Task<List<T>>GetListByRange<T>(string key)
-    {
-        var redisId = new RedisList<T>(GetConnection(),key,null);
-        List<T> result = new List<T>();
-        var redisList = await redisId.RangeAsync();
-        result.AddRange(redisList.ToList());
-        return result;
-    }
-    public  RedisDictionary<TKey,TVal>GetHash<TKey,TVal>(string key)
+    
+    public  RedisDictionary<TKey,TVal>GetHash<TKey,TVal>(string key)where TKey:notnull
     {
         var redisId = new RedisDictionary<TKey,TVal>(GetConnection(),key,null);
         
         return redisId;
     }
     
-    public async Task<RedisSortedSet<T>>GetSortedSet<T>(string key)
-    {
-        var redisId = new RedisSortedSet<T>(GetConnection(),key,null);
-        await redisId.DeleteAsync();
-        return redisId;
-    }
-    public async Task<T[]>GetSortedSetRangeByScore<T>(string key,int min,int max)
-    {
-        var redisId = new RedisSortedSet<T>(GetConnection(),key,null);
-        await redisId.DeleteAsync();
-
-        var result= await redisId.RangeByScoreAsync(min, max);
-        
-        return result;
-    }
-    public  async Task<RedisResult<T>> GetStringValue<T>(string key)
+    public  async Task<T> GetStringValue<T>(string key)
     {
         var redisId = new RedisString<T>(GetConnection(),key,null);
-        
-        return await redisId.GetAsync();
+        var result = await redisId.GetAsync();
+        return result.Value;
     }
     public  async Task<bool> SetStringValue<T>(string key, T value)
     {
@@ -121,25 +100,16 @@ public class RedisDatabase:IRedisDatabase
         var redisId = new RedisString<T>(GetConnection(),key,defaultExpiry);
         return await redisId.SetAsync(value);
     }
-    public async Task<bool>SetHashValue<TKEY,T>(string key,TKEY subKey,T value)where T:class
+    public async Task<bool>SetHashValue<TKEY,T>(string key,TKEY subKey,T value)
+        where T:class 
+        where TKEY:notnull
     {
         var defaultExpiry = TimeSpan.FromDays(1);
         var redisId = new RedisDictionary<TKEY,T>(GetConnection(),key,defaultExpiry);
         var result= await redisId.SetAsync(subKey, value);
         return result;
     }
-    public  async Task<long>InsertListValue<T>(string key,T value)where T:class
-    {
-        var defaultExpiry = TimeSpan.FromDays(1);
-        var redisId = new RedisList<T>(GetConnection(),key,defaultExpiry);
-        return await redisId.RightPushAsync(value);
-    }
     
-    public async Task<long>SetListValue<T>(string key,T value,TimeSpan?expiry=null)where T:class
-    {
-        var redisId = new RedisList<T>(GetConnection(),key,expiry);
-        return await redisId.RightPushAsync(value);
-    }
     
     
 }

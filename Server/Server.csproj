@@ -25,6 +25,9 @@
       <Compile Remove="QueryFormatter.cs" />
       <Compile Remove="Model\User\UserBag.cs" />
       <Compile Remove="Model\User\User.cs" />
+      <Compile Remove="Services\DailyEvent.cs" />
+      <Compile Remove="Services\MemcacheManager.cs" />
+      <Compile Remove="Interface\IMasterTable.cs" />
     </ItemGroup>
 
 </Project>
