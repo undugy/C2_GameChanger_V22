@@ -76,23 +76,16 @@ public class UserTeam:IUserData
     }
     
     
-    // public static async Task<UserTeam> SelectQueryOrDefaultAsync(string userID)
-    // {
-    //     UserTeam? userInfo=null;
-    //     try
-    //     {
-    //         using (var conn = await DBManager.GetDBConnection())
-    //         {
-    //             userInfo=await conn.QuerySingleOrDefaultAsync<UserTeam>("SELECT * FROM user_team WHERE userId=@ID",
-    //                 new { ID = userID });
-    //         }
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         Console.WriteLine(e);
-    //         return userInfo;
-    //     }
-    //
-    //     return userInfo;
-    // }
+    public (String,Object) UpdateWealthQuery(string wealthName,UInt32 quantity)
+    {
+        var query = "UPDATE user_team SET "+wealthName+"="+wealthName+"+@Quantity WHERE UserId=@userId";
+        
+        var obj=new
+        {
+            userId =UserId,
+            Quantity = quantity,
+            WealtName = wealthName
+        };
+        return (query,obj);
+    }
 }

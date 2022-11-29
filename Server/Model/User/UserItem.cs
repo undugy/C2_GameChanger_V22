@@ -29,17 +29,9 @@ public class UserItem:IUserData
 
     public (String,Object) UpdateQuery()
     {
-        
-       // var query = "UPDATE user_bag SET " +
-       //                      "ItemId=@itemId," +
-       //                      "UserId=@userId," +
-       //                      "Quantity=@quantity,"+
-       //                      "Kind=@kind "+
-       //                      "WHERE UserId=@userId AND ItemId=@itemId";
-
         var query = "INSERT INTO user_bag(UserId,ItemId,Quantity,Kind) " +
-                "VALUES (@itemId,@userId,@quantity,@kind)" +
-                "ON DUPLICATE KEY UPDATE Quantity=Quantity+@quantity";
+                    "VALUES (@itemId,@userId,@quantity,@kind)" +
+                    "ON DUPLICATE KEY UPDATE Quantity=Quantity+@quantity";
         
         var obj=new
                 {
@@ -48,9 +40,6 @@ public class UserItem:IUserData
                     quantity = Quantity,
                     kind = Kind
                 };
-                
-          
-
         return (query,obj);
     }
     

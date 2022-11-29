@@ -193,7 +193,7 @@ public class GameDatabase:IDataBase
 
     public async Task<MailListResponse> GetMailList(MailListRequest request)
     {
-        var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE UserId=@userId";
+        var mailSelectQuery = "SELECT MailId,ItemId,Quantity FROM user_mail WHERE UserId=@userId";
         var response = new MailListResponse();
         await using (var connection = await GetDBConnection())
         {
@@ -209,93 +209,124 @@ public class GameDatabase:IDataBase
         }
     }
 
-    public async Task<MailResponse> ReceiveMail(MailRequest request)
+    public async Task<UserMail?> SelectMail(UInt32 mailId)
     {
 
         var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE MailId=@mailID";
         var mailDeleteQuery = "DELETE  FROM user_mail WHERE MailId=@mailID";
-        var mailIdObject = new { mailID = request.MailIndex };
-        var response = new MailResponse();
+        var mailIdObject = new { mailID = mailId };
+        UserMail? userMail;
         await using (var connection = await GetDBConnection())
         {
             try
             {
-                var userMail = await connection.QuerySingleOrDefaultAsync<UserMail>(mailSelectQuery,mailIdObject );
+                userMail = await connection.QuerySingleOrDefaultAsync<UserMail>(mailSelectQuery,mailIdObject );
                 if (userMail == null)
                 {
-                    response.Result = ErrorCode.NOID;
-                    return response;
+                    return null;
                 }
+
+            }
+            catch (Exception e)
+            {
+
+                throw new Exception(e.Message);
+            }
+            
+        }
+
+        return userMail;
+    }
+
+    public async Task<ErrorCode> DeleteMail(UInt32 mailId)
+    {
+        var mailDeleteQuery = "DELETE  FROM user_mail WHERE MailId=@mailID";
+        var mailIdObject = new { mailID = mailId };
+        await using (var connection = await GetDBConnection())
+        {
+            var affectRow = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
+            if (affectRow == 0)
+            {
+                throw new Exception("mail delete fail!");
                 
+            }
+        }
+
+        return ErrorCode.NONE;
+    }
+
+    public async Task<ErrorCode> DeleteAllMail(UInt32 userId)
+    {
+        var mailDeleteQuery = "DELETE  FROM user_mail WHERE UserId=@userID";
+        var mailIdObject = new { userID = userId };
+        await using (var connection = await GetDBConnection())
+        {
+            var affectRow = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
+            if (affectRow == 0)
+            {
+                return ErrorCode.CREATE_FAIL;
+
+            }
+        }
+
+        return ErrorCode.NONE;
+    }
+    public async Task<ErrorCode> ReceiveByItemId(UserMail userMail,UInt32 userId)
+    {
+        await using (var connection = await GetDBConnection())
+        {
+         
                 var userItem = new UserItem()
-                    { ItemId = userMail.ItemId,UserId = request.ID,Kind = CheckItemKind(userMail.ItemId), Quantity = userMail.Quantity };
+                {
+                    ItemId = userMail.ItemId, UserId = userId, Kind = CheckItemKind(userMail.ItemId),
+                    Quantity = userMail.Quantity
+                };
                 var updateQuery = userItem.UpdateQuery();
                 var affectRow = await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
                 if (affectRow == 0)
                 {
-                    response.Result = ErrorCode.CREATE_FAIL;
-                    return response;
-                }
-                affectRow = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
-                if (affectRow == 0)
-                {
-                    throw new Exception("mail delete fail!");
+                     return ErrorCode.CREATE_FAIL;
+                    
                 }
 
-                response.ItemId = userMail.ItemId;
-                response.Quantity = userMail.Quantity;
-
-            }
-            catch (Exception e)
-            {
-
-                throw new Exception(e.Message);
-            }
-            
         }
+        return ErrorCode.NONE;
+    }
+    public async Task<ErrorCode> ReceiveByItemName(UserMail userMail,UInt32 userId,string wealthName)
+    {
+        await using (var connection = await GetDBConnection())
+        {
+         
+            var userTeam = new UserTeam() { UserId = userId };
+            var updateQuery = userTeam.UpdateWealthQuery(wealthName,userMail.Quantity);
+            var affectRow = await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
+            if (affectRow == 0)
+            {
+                return ErrorCode.CREATE_FAIL;
+                    
+            }
 
-        return response;
+        }
+        return ErrorCode.NONE;
     }
 
-    public async Task<ReceiveAllMailResponse> ReceiveAllMail(ReceiveAllMailRequest request)
+    public async Task<IEnumerable<UserMail>?> SelectAllMail(UInt32 userID)
     {
 
         var mailSelectQuery = "SELECT ItemId,Quantity FROM user_mail WHERE UserId=@userId";
         var mailDeleteQuery = "DELETE  FROM user_mail WHERE UserId=@userId";
-        var mailIdObject = new { userId = request.ID };
-        var response = new ReceiveAllMailResponse();
+        var mailIdObject = new { userId = userID };
+        IEnumerable<UserMail>?userMails=null;
         await using (var connection = await GetDBConnection())
         {
             try
             {
-                var userMails = await connection.QueryAsync<UserMail>(mailSelectQuery,mailIdObject );
+                userMails = await connection.QueryAsync<UserMail>(mailSelectQuery,mailIdObject );
                 if (userMails == null)
                 {
-                    response.Result = ErrorCode.NOID;
-                    return response;
-                }
 
-                foreach (var mail in userMails)
-                {
-                    var userItem = new UserItem()
-                        { ItemId = mail.ItemId,UserId = request.ID,Kind = CheckItemKind(mail.ItemId), Quantity = mail.Quantity };
-                    var updateQuery = userItem.UpdateQuery();
-                    var affectRow = await connection.ExecuteAsync(updateQuery.Item1, updateQuery.Item2);
-                    if (affectRow == 0)
-                    {
-                        response.Result = ErrorCode.CREATE_FAIL;
-                        return response;
-                    }
-                    
-                    response.ReceiveItemList.Add(mail.ItemId,mail.Quantity);
+                    return null;
                 }
-                var deleteCount = await connection.ExecuteAsync(mailDeleteQuery, mailIdObject);
-                if (deleteCount == 0)
-                {
-                    throw new Exception("mail delete fail!");
-                }
-
-                
 
             }
             catch (Exception e)
@@ -306,7 +337,7 @@ public class GameDatabase:IDataBase
             
         }
 
-        return response;
+        return userMails;
     }
     public string CheckItemKind(UInt32 itemId)
     {

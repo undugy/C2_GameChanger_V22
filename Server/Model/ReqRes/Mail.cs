@@ -13,6 +13,12 @@ public class ReceiveAllMailResponse
 {
     public Dictionary<UInt32,UInt32> ReceiveItemList { get; set; }
     public ErrorCode Result{ get; set; }
+
+    public ReceiveAllMailResponse()
+    {
+        ReceiveItemList = new Dictionary<uint, uint>();
+        Result = ErrorCode.NONE;
+    }
 }
 
 public class MailRequest
