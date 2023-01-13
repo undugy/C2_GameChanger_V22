@@ -38,7 +38,7 @@ public class CheckInController:Controller
         var userAttendance = attendanceResult.Item2;
         var lastAccess = logResult.Item2;
         var date = DateTime.Now;
-        // 접속날짜가 오늘이고 IsChecked가 false이면 
+
         if ((date - lastAccess).Days == 0 && userAttendance.IsChecked==false) 
         {
             var dailyReward = await _redisDatabase.GetHashValue<uint, TblDailyCheckIn>("dailycheckinreward", 
@@ -51,7 +51,7 @@ public class CheckInController:Controller
             response.Result = ErrorCode.NONE;
             
             userAttendance.CheckDay++;
-            //업데이트 
+ 
         }
 
         

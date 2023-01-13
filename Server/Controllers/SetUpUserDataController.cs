@@ -1,4 +1,3 @@
-using System.Collections;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
@@ -13,7 +12,6 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-//이 컨트롤러에서는 처음 게임을 실행했을 때 보내줘야하는 유저 데이터 처리
 public class SetUpUserDataController : ControllerBase
 {
     private readonly ILogger _logger;
@@ -28,8 +26,7 @@ public class SetUpUserDataController : ControllerBase
         _database = database;
         _redis = redis;
     }
-
-    // 팀 정보,우편함,가방,카드정보(이거 일단 제외)
+    
     [HttpPost]
     public async Task<SetUpResponse> Post(SetUpRequest req)
     {
@@ -104,7 +101,7 @@ public class SetUpUserDataController : ControllerBase
         }
 
         var userDataList = new List<IUserData>();
-        //나중에 StoredProcedure로 바꿔도 좋을 것 같다.
+ 
         var date = DateTime.Today;
         string nickName = request.TeamName + '#' + request.ID;
         userDataList.Add(new UserTeam(TeamIdResult.Item2, request.ID, nickName));

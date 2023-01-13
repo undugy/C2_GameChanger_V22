@@ -27,14 +27,4 @@ public class UserMail:IUserData
                 };
         return (query,obj);
     }
-
-
-
-    //TODO 전체를 불러오는 쿼리는 여기 있으면 안됨
-    // public Tuple<String, Object> SelectQueryAsync(string userId)
-    // {
-    //     var query = "SELECT * FROM user_mail WHERE TeamId=@ID ";
-    //     var obj = new { ID = TeamId };
-    //     return new Tuple<String, Object>(query, obj);
-    // }
 }

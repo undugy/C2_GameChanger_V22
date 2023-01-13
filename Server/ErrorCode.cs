@@ -1,6 +1,6 @@
 namespace Server;
 
-public enum ErrorCode:Int32
+public enum ErrorCode
 {
     NONE=0,
     NOID,

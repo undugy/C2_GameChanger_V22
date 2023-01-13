@@ -34,17 +34,19 @@ public class RedisDatabase:IRedisDatabase
         {
             try
             {
-                var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable());
-                var items = multi.Read<TblItem>().ToDictionary(keySelector:m=>m.ItemId).AsEnumerable();
-                var teams = multi.Read<TblTeam>().ToDictionary(keySelector:m=>m.TeamId).AsEnumerable();
-                var leagues = multi.Read<TblLeague>().ToDictionary(keySelector:m=>m.LeagueId).AsEnumerable();
-                var checkIn= multi.Read<TblDailyCheckIn>().ToDictionary(keySelector:m=>m.Day).AsEnumerable();
-                multi.Dispose();
-                await SetMasterTable("item", items);
-                await SetMasterTable("team", teams);
-                await SetMasterTable("league", leagues);
-                await SetMasterTable("dailycheckinreward", checkIn);
-
+                //var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable());
+                using (var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable()))
+                {
+                    var items = multi.Read<TblItem>().ToDictionary(keySelector: m => m.ItemId).AsEnumerable();
+                    var teams = multi.Read<TblTeam>().ToDictionary(keySelector: m => m.TeamId).AsEnumerable();
+                    var leagues = multi.Read<TblLeague>().ToDictionary(keySelector: m => m.LeagueId).AsEnumerable();
+                    var checkIn = multi.Read<TblDailyCheckIn>().ToDictionary(keySelector: m => m.Day).AsEnumerable();
+                 
+                    await SetMasterTable("item", items);
+                    await SetMasterTable("team", teams);
+                    await SetMasterTable("league", leagues);
+                    await SetMasterTable("dailycheckinreward", checkIn);
+                }
             }
             catch (Exception e)
             {

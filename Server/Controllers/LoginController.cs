@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using ZLogger;
-using Dapper;
 using Server.Interface;
 using Server.Model.ReqRes;
 using Server.Services;
-using Server.Table;
+
 
 namespace Server.Controllers;
 [ApiController]

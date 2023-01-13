@@ -1,6 +1,4 @@
-using CsvHelper;
-using Server.Interface;
-using Server.Services;
+
 namespace Server.Table;
 
 public class TblTeam
