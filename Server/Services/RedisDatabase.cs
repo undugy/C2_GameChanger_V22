@@ -13,7 +13,6 @@ public class RedisDatabase:IRedisDatabase
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;
     private readonly ILogger _logger;
-    private readonly IDBManager _database;
     public static void Init(IConfiguration configuration)
     {
         _config = new RedisConfig("basic", configuration.GetSection("DBConnection")["Redis"]);
@@ -27,45 +26,10 @@ public class RedisDatabase:IRedisDatabase
         return ErrorCode.NONE;
     }
 
-    private async Task SetUpAllMasterData()
-    {
-        var masterDb = _database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
-        using (var connection = await masterDb.GetDBConnection()) 
-        {
-            try
-            {
-                var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable());
-                var items = multi.Read<TblItem>().ToDictionary(keySelector:m=>m.ItemId).AsEnumerable();
-                var teams = multi.Read<TblTeam>().ToDictionary(keySelector:m=>m.TeamId).AsEnumerable();
-                var leagues = multi.Read<TblLeague>().ToDictionary(keySelector:m=>m.LeagueId).AsEnumerable();
-                var checkIn= multi.Read<TblDailyCheckIn>().ToDictionary(keySelector:m=>m.Day).AsEnumerable();
-                multi.Dispose();
-                await SetMasterTable("item", items);
-                await SetMasterTable("team", teams);
-                await SetMasterTable("league", leagues);
-                await SetMasterTable("dailycheckinreward", checkIn);
-
-            }
-            catch (Exception e)
-            {
-                _logger.ZLogInformation(e.Message);
-            }
-            
-        }
-    }
-    
-    
-    public RedisDatabase(ILogger<RedisDatabase>logger,IDBManager database)
+    public RedisDatabase(ILogger<RedisDatabase>logger)
     {
         _redisConn = new RedisConnection(_config);
         _logger = logger;
-        _database = database;
-        _logger.ZLogInformation("Redis생성자 호출");
-        var t = Task.Run(async () =>
-        {
-            await SetUpAllMasterData();
-        });
-        t.Wait();
     }
     
     

@@ -9,15 +9,17 @@ using Server.Table;
 namespace Server.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class LoginController:Controller
+public class LoginController:ControllerBase
 {
     private readonly ILogger _logger;
-    private readonly IDBManager _database;
+    private readonly IGameDataBase _gameDatabase;
     private readonly IRedisDatabase _redis;
-    public LoginController(ILogger<LoginController> logger,IDBManager database, IRedisDatabase redis)
+    public LoginController(ILogger<LoginController> logger,
+        IGameDataBase gameDatabase, 
+        IRedisDatabase redis)
     {
         _logger = logger;
-        _database = database;
+        _gameDatabase = gameDatabase;
         _redis = redis;
     }
 
@@ -26,9 +28,9 @@ public class LoginController:Controller
     {
         _logger.ZLogInformation($"[Request Login] ID:{request.ID}, PW:{request.PW}");
         var response = new LoginResponse();
-        var database = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
+       
         
-        var userInfoQuery = await database.SelectSingleUserInfo(request.ID);
+        var userInfoQuery = await _gameDatabase.SelectSingleUserInfo(request.ID);
         response.Result = userInfoQuery.Item1;
         
         var userInfo = userInfoQuery.Item2;
@@ -45,7 +47,7 @@ public class LoginController:Controller
             //토큰 등록
             string token = HashFunctions.AuthToken();
             
-            if (await _redis.SetStringValue<string>(userInfo.UserId.ToString(), token))
+            if (await _redis.SetStringValue(userInfo.UserId.ToString(), token))
             {
                 response.Token = token;
                 response.ID = userInfo.UserId;

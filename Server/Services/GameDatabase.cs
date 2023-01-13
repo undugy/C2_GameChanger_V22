@@ -8,7 +8,7 @@ using Server.Table;
 
 namespace Server.Services;
 
-public class GameDatabase:IDataBase
+public class GameDatabase:IGameDataBase
 {
     private static string _connectionString;
 

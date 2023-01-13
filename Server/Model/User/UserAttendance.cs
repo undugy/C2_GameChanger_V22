@@ -2,7 +2,7 @@ using Server.Interface;
 
 namespace Server.Model.User;
 
-public class UserAttendance:IUserData
+public class UserAttendance
 {
     public UInt32 UserId { get; set; }
     public string ContentType{ get; set; }

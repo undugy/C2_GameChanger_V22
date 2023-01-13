@@ -1,12 +1,11 @@
 using Dapper;
 using MySqlConnector;
 using Server.Interface;
-using Server.Model.User;
 using Server.Table;
 
 namespace Server.Services;
 
-public class MasterDatabase:IDataBase
+public class MasterDatabase:IMasterDatabase
 {
     private static string _connectionString;
     
@@ -15,13 +14,7 @@ public class MasterDatabase:IDataBase
         _connectionString = connectionString;
     }
 
-    public string GetAllMasterTable()
-    {
-        return "SELECT * FROM item; " +
-               "SELECT * FROM team;" +
-               "SELECT * FROM league;" +
-               "SELECT * FROM dailycheckinreward";
-    }
+    
     public async Task<MySqlConnection>GetDBConnection()
     {
         

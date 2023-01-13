@@ -5,7 +5,8 @@ using ZLogger;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddTransient<IDBManager, DBManager>();
+builder.Services.AddTransient<IMasterDatabase, MasterDatabase>();
+builder.Services.AddTransient<IGameDataBase, GameDatabase>();
 builder.Services.AddSingleton<IRedisDatabase, RedisDatabase>();
 
 builder.Host.ConfigureLogging(logging =>
@@ -18,7 +19,6 @@ builder.Host.ConfigureLogging(logging =>
 
 
 var app = builder.Build();
-DBManager.Init(app.Configuration);
 RedisDatabase.Init(app.Configuration);
 app.UseRouting();
 

@@ -6,7 +6,7 @@ using Server.Table;
 namespace Server.Model.User;
 
 
-public class UserInfo: IUserData
+public class UserInfo
 {
     public UInt32 UserId { get; set; }
     public string Email { get; set; }

@@ -2,7 +2,7 @@ using Server.Interface;
 
 namespace Server.Model.User;
 
-public class UserLog:IUserData
+public class UserLog
 {
     public UInt32 UserId { get; set; }
     public DateTime CreatedDate { get; set; }
