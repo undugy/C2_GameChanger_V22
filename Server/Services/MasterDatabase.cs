@@ -8,12 +8,13 @@ namespace Server.Services;
 public class MasterDatabase:IMasterDatabase
 {
     private static string _connectionString;
-    
-    public static void Init(string connectionString)
+    public static void Init(IConfiguration configuration)
     {
-        _connectionString = connectionString;
-    }
+        _connectionString= configuration.GetSection("DBConnection")["v22_master"];
+        
 
+    }
+    
     
     public async Task<MySqlConnection>GetDBConnection()
     {
@@ -27,7 +28,13 @@ public class MasterDatabase:IMasterDatabase
         await connection.OpenAsync();
         return connection;
     }
-    
+    public string GetAllMasterTable()
+    {
+        return "SELECT * FROM item; " +
+               "SELECT * FROM team;" +
+               "SELECT * FROM league;" +
+               "SELECT * FROM dailycheckinreward";
+    }
     public async Task<Tuple<ErrorCode,uint>> SelectSingleItemId(string itemName)
     {
         ErrorCode errorCode = ErrorCode.NONE;

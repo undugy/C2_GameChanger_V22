@@ -12,10 +12,13 @@ public class GameDatabase:IGameDataBase
 {
     private static string _connectionString;
 
-    public static void Init(string connectionString)
+    public static void Init(IConfiguration configuration)
     {
-        _connectionString = connectionString;
+        _connectionString= configuration.GetSection("DBConnection")["v22"];
+
+
     }
+
     
     
     public async Task<MySqlConnection>GetDBConnection()

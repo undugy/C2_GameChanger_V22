@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
 using Server.Model.User;
 using Server.Model.ReqRes;
-using Server.Services;
 
 using Server.Table;
 
@@ -102,27 +101,21 @@ public class SetUpUserDataController : ControllerBase
         }
 
       
-        //나중에 StoredProcedure로 바꿔도 좋을 것 같다.
+       
         var date = DateTime.Today;
         string nickName = request.TeamName + '#' + request.ID;
-        //TODO 이 부분 전부 불러오는 것에서 수정하기 -> SQl Kata 이용해서 페이징으로 불러와라
-        //userDataList.Add(new UserTeam(TeamIdResult.Item2, request.ID, nickName));
-        //userDataList.Add(new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" });
-        //userDataList.Add( new UserAttendance(request.ID, "dailyCheckIn"));
-        //userDataList.Add(new UserLog(request.ID,date,date));
-       // await using (var connection = await gameDb.GetDBConnection())
-       // {
-       //     foreach (var data in userDataList)
-       //     {
-       //         var insertQuery = data.InsertQuery();
-       //         var affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
-       //         if (affectRow == 0)
-       //         {
-       //             response.Result = ErrorCode.NOID;
-       //             _logger.LogWarning("Insert Failed ErrorCode:{0}",ErrorCode.NOID);
-       //         }
-       //     }
-       // }
+        
+        using (var connection = await _gameDatabase.GetDBConnection())
+        {
+            var team=new UserTeam(TeamIdResult.Item2, request.ID, nickName).InsertQuery();
+            var item=new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" }.InsertQuery();
+            var attend= new UserAttendance(request.ID, "dailyCheckIn").InsertQuery();
+            var access=new UserAccess(request.ID,date,date).InsertQuery();
+            await connection.ExecuteAsync(team.Item1, team.Item2);
+            await connection.ExecuteAsync(item.Item1, item.Item2);
+            await connection.ExecuteAsync(attend.Item1, attend.Item2);
+            await connection.ExecuteAsync(access.Item1, access.Item2);
+        }
 
 
         return response;

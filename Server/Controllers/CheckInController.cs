@@ -2,7 +2,6 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
 using Server.Model.ReqRes;
-using Server.Services;
 using Server.Table;
 using ZLogger;
 
@@ -50,7 +49,6 @@ public class CheckInController:ControllerBase
             response.Result = ErrorCode.NONE;
             
             userAttendance.CheckDay++;
-            //업데이트 
         }
 
         

@@ -1,7 +1,7 @@
 using CloudStructures;
 using CloudStructures.Structures;
-using Server.Interface;
 using Dapper;
+using Server.Interface;
 using Server.Table;
 using ZLogger;
 
@@ -13,10 +13,12 @@ public class RedisDatabase:IRedisDatabase
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;
     private readonly ILogger _logger;
+    private IMasterDatabase _masterDatabase;
     public static void Init(IConfiguration configuration)
     {
         _config = new RedisConfig("basic", configuration.GetSection("DBConnection")["Redis"]);
         
+
     }
 
     private async Task<ErrorCode> SetMasterTable<TKey, TVal>(string key, IEnumerable<KeyValuePair<TKey, TVal>> table)where TKey:notnull
@@ -26,12 +28,47 @@ public class RedisDatabase:IRedisDatabase
         return ErrorCode.NONE;
     }
 
-    public RedisDatabase(ILogger<RedisDatabase>logger)
+
+    private async Task SetUpAllMasterData()
+    {
+        using (var connection = await _masterDatabase.GetDBConnection()) 
+        {
+            try
+            {
+                using (var multi = await connection.QueryMultipleAsync(_masterDatabase.GetAllMasterTable()))
+                {
+                    var items = multi.Read<TblItem>().ToDictionary(keySelector: m => m.ItemId).AsEnumerable();
+                    var teams = multi.Read<TblTeam>().ToDictionary(keySelector: m => m.TeamId).AsEnumerable();
+                    var leagues = multi.Read<TblLeague>().ToDictionary(keySelector: m => m.LeagueId).AsEnumerable();
+                    var checkIn = multi.Read<TblDailyCheckIn>().ToDictionary(keySelector: m => m.Day).AsEnumerable();
+                 
+                    await SetMasterTable("item", items);
+                    await SetMasterTable("team", teams);
+                    await SetMasterTable("league", leagues);
+                    await SetMasterTable("dailycheckinreward", checkIn);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.ZLogInformation(e.Message);
+            }
+            
+        }
+    }
+    
+    
+    public RedisDatabase(ILogger<RedisDatabase>logger,IMasterDatabase masterDatabase)
     {
         _redisConn = new RedisConnection(_config);
         _logger = logger;
+        _masterDatabase = masterDatabase;
+        _logger.ZLogInformation("Redis생성자 호출");
+        var t = Task.Run(async () =>
+        {
+            await SetUpAllMasterData();
+        });
+        t.Wait();
     }
-    
     
     public async Task<T>GetHashValue<TKey,T>(string key,TKey subKey)where TKey:notnull
     {
