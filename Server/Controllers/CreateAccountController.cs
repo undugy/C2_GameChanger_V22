@@ -28,6 +28,7 @@ public class CreateAccountController:ControllerBase
         _logger.ZLogInformation($"Start CreateAccount ID:{request.ID},PW{request.PW}");
         var saltValue = HashFunctions.SaltString();
         var hashedPassword = HashFunctions.MakeHashingPassWord(saltValue, request.PW);
+        
         await using (var connection = await _gameDataBase.GetDBConnection())
         {
             var userInfo = new UserInfo()

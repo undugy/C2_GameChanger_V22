@@ -5,6 +5,7 @@ using Server.Model.User;
 using Server.Model.ReqRes;
 
 using Server.Table;
+using ZLogger;
 
 namespace Server.Controllers;
 
@@ -85,7 +86,7 @@ public class SetUpUserDataController : ControllerBase
     public async Task<InitializeTeamResponse> Post(InitializeTeamRequest request)
     {
         var response = new InitializeTeamResponse();
-        
+        _logger.ZLogInformation("ID:{"+request.ID+"}"+"NAME:{"+request.TeamName+"}");
         var ItemIdResult = await _masterDatabase.SelectSingleItemId("NAMECHANGETICKET");
         if (ItemIdResult.Item1 != ErrorCode.NONE)
         {

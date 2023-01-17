@@ -55,7 +55,6 @@ public class LoginController:ControllerBase
         }
         response.Result = ErrorCode.WRONG_PW;
         return response;
-    
     }
 
 }

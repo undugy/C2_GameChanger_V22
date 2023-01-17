@@ -62,7 +62,6 @@ public class RedisDatabase:IRedisDatabase
         _redisConn = new RedisConnection(_config);
         _logger = logger;
         _masterDatabase = masterDatabase;
-        _logger.ZLogInformation("Redis생성자 호출");
         var t = Task.Run(async () =>
         {
             await SetUpAllMasterData();
