@@ -4,7 +4,7 @@ using Server.Services;
 
 namespace Server.Model.User;
 
-public class UserItem:IUserData
+public class UserItem
 {
     public UInt32 ItemId{ get; set; }
     public UInt32 UserId{ get; set; }

@@ -4,7 +4,7 @@ using Server.Services;
 
 namespace Server.Model.User;
 
-public class UserMail:IUserData
+public class UserMail
 {
     public int MailId{ get; set; }
     public UInt32 UserId{ get; set; }

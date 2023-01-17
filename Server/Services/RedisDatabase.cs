@@ -1,7 +1,7 @@
 using CloudStructures;
 using CloudStructures.Structures;
-using Server.Interface;
 using Dapper;
+using Server.Interface;
 using Server.Table;
 using ZLogger;
 
@@ -13,11 +13,12 @@ public class RedisDatabase:IRedisDatabase
     public RedisConnection GetConnection() => _redisConn;
     private static RedisConfig _config;
     private readonly ILogger _logger;
-    private readonly IDBManager _database;
+    private IMasterDatabase _masterDatabase;
     public static void Init(IConfiguration configuration)
     {
         _config = new RedisConfig("basic", configuration.GetSection("DBConnection")["Redis"]);
         
+
     }
 
     private async Task<ErrorCode> SetMasterTable<TKey, TVal>(string key, IEnumerable<KeyValuePair<TKey, TVal>> table)where TKey:notnull
@@ -27,15 +28,16 @@ public class RedisDatabase:IRedisDatabase
         return ErrorCode.NONE;
     }
 
+
     private async Task SetUpAllMasterData()
     {
-        var masterDb = _database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
-        using (var connection = await masterDb.GetDBConnection()) 
+        using (var connection = await _masterDatabase.GetDBConnection()) 
         {
             try
             {
-                //var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable());
-                using (var multi = await connection.QueryMultipleAsync(masterDb.GetAllMasterTable()))
+
+                using (var multi = await connection.QueryMultipleAsync(_masterDatabase.GetAllMasterTable()))
+
                 {
                     var items = multi.Read<TblItem>().ToDictionary(keySelector: m => m.ItemId).AsEnumerable();
                     var teams = multi.Read<TblTeam>().ToDictionary(keySelector: m => m.TeamId).AsEnumerable();
@@ -57,19 +59,17 @@ public class RedisDatabase:IRedisDatabase
     }
     
     
-    public RedisDatabase(ILogger<RedisDatabase>logger,IDBManager database)
+    public RedisDatabase(ILogger<RedisDatabase>logger,IMasterDatabase masterDatabase)
     {
         _redisConn = new RedisConnection(_config);
         _logger = logger;
-        _database = database;
-        _logger.ZLogInformation("Redis생성자 호출");
+        _masterDatabase = masterDatabase;
         var t = Task.Run(async () =>
         {
             await SetUpAllMasterData();
         });
         t.Wait();
     }
-    
     
     public async Task<T>GetHashValue<TKey,T>(string key,TKey subKey)where TKey:notnull
     {

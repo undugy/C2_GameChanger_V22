@@ -38,7 +38,7 @@ public class CheckUserSessionMiddleWare
             {
                 return;
             }
-            //TODO Redis 인증확인
+            //Redis 인증확인
             var redisToken = await _redis.GetStringValue<string>(userID);
             
             if (redisToken != accessToken)

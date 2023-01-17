@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Interface;
 using Server.Model.User;
 using Server.Model.ReqRes;
-using Server.Services;
 
 using Server.Table;
+using ZLogger;
 
 namespace Server.Controllers;
 
@@ -15,15 +15,18 @@ namespace Server.Controllers;
 public class SetUpUserDataController : ControllerBase
 {
     private readonly ILogger _logger;
-    private readonly IDBManager _database;
+    private readonly IGameDataBase _gameDatabase;
+    private readonly IMasterDatabase _masterDatabase;
     private readonly IRedisDatabase _redis;
 
     public SetUpUserDataController(ILogger<SetUpUserDataController> logger,
-        IDBManager database,
+        IGameDataBase gameDatabase,
+        IMasterDatabase masterDatabase,
         IRedisDatabase redis)
     {
         _logger = logger;
-        _database = database;
+        _gameDatabase = gameDatabase;
+        _masterDatabase = masterDatabase;
         _redis = redis;
     }
     
@@ -31,9 +34,8 @@ public class SetUpUserDataController : ControllerBase
     public async Task<SetUpResponse> Post(SetUpRequest req)
     {
         SetUpResponse response;
-        var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
-        var lastAccess = await gameDb.SelectUserLastAccess(req.ID);
-        var attendanceResult = await gameDb.SelectSingleUserAttendance(req.ID, "dailyCheckIn");
+        var lastAccess = await _gameDatabase.SelectUserLastAccess(req.ID);
+        var attendanceResult = await _gameDatabase.SelectSingleUserAttendance(req.ID, "dailyCheckIn");
        
         if (attendanceResult.Item1 == ErrorCode.NOT_INIT)
         {
@@ -58,10 +60,10 @@ public class SetUpUserDataController : ControllerBase
 
         }
         
-        response = await gameDb.MakeSetUpResponse(req.ID);
-        response.Result = await gameDb.UpdateUserLastAccess(req.ID, nowDate);
+        response = await _gameDatabase.MakeSetUpResponse(req.ID);
+        response.Result = await _gameDatabase.UpdateUserLastAccess(req.ID, nowDate);
 
-        await using (var connection = await gameDb.GetDBConnection())
+        await using (var connection = await _gameDatabase.GetDBConnection())
         {
             foreach (var data in userDataList.ToList())
             {
@@ -82,44 +84,34 @@ public class SetUpUserDataController : ControllerBase
     public async Task<InitializeTeamResponse> Post(InitializeTeamRequest request)
     {
         var response = new InitializeTeamResponse();
-        var gameDb = _database.GetDatabase<GameDatabase>(DBNumber.GameDatabase);
-        var masterDb = _database.GetDatabase<MasterDatabase>(DBNumber.MasterDatabase);
-
-
-        var ItemIdResult = await masterDb.SelectSingleItemId("NAMECHANGETICKET");
+        _logger.ZLogInformation("ID:{"+request.ID+"}"+"NAME:{"+request.TeamName+"}");
+        var ItemIdResult = await _masterDatabase.SelectSingleItemId("NAMECHANGETICKET");
         if (ItemIdResult.Item1 != ErrorCode.NONE)
         {
             response.Result = ItemIdResult.Item1;
             return response;
         }
 
-        var TeamIdResult = await masterDb.SelectSingleTeamId(request.TeamName);
+        var TeamIdResult = await _masterDatabase.SelectSingleTeamId(request.TeamName);
         if (TeamIdResult.Item1 != ErrorCode.NONE)
         {
             response.Result = TeamIdResult.Item1;
             return response;
         }
 
-        var userDataList = new List<IUserData>();
- 
         var date = DateTime.Today;
         string nickName = request.TeamName + '#' + request.ID;
-        userDataList.Add(new UserTeam(TeamIdResult.Item2, request.ID, nickName));
-        userDataList.Add(new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" });
-        userDataList.Add( new UserAttendance(request.ID, "dailyCheckIn"));
-        userDataList.Add(new UserLog(request.ID,date,date));
-        await using (var connection = await gameDb.GetDBConnection())
+        
+        using (var connection = await _gameDatabase.GetDBConnection())
         {
-            foreach (var data in userDataList)
-            {
-                var insertQuery = data.InsertQuery();
-                var affectRow = await connection.ExecuteAsync(insertQuery.Item1, insertQuery.Item2);
-                if (affectRow == 0)
-                {
-                    response.Result = ErrorCode.NOID;
-                    _logger.LogWarning("Insert Failed ErrorCode:{0}",ErrorCode.NOID);
-                }
-            }
+            var team=new UserTeam(TeamIdResult.Item2, request.ID, nickName).InsertQuery();
+            var item=new UserItem() { ItemId = ItemIdResult.Item2, Quantity = 1, UserId = request.ID,Kind="item" }.InsertQuery();
+            var attend= new UserAttendance(request.ID, "dailyCheckIn").InsertQuery();
+            var access=new UserAccess(request.ID,date,date).InsertQuery();
+            await connection.ExecuteAsync(team.Item1, team.Item2);
+            await connection.ExecuteAsync(item.Item1, item.Item2);
+            await connection.ExecuteAsync(attend.Item1, attend.Item2);
+            await connection.ExecuteAsync(access.Item1, access.Item2);
         }
 
 

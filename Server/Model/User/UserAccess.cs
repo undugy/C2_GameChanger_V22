@@ -2,17 +2,17 @@ using Server.Interface;
 
 namespace Server.Model.User;
 
-public class UserLog:IUserData
+public class UserAccess
 {
     public UInt32 UserId { get; set; }
     public DateTime CreatedDate { get; set; }
     public DateTime LastAccess { get; set; }
 
-    public UserLog()
+    public UserAccess()
     {
         
     }
-    public UserLog(UInt32 userId,DateTime createdDate,DateTime lastAccess)
+    public UserAccess(UInt32 userId,DateTime createdDate,DateTime lastAccess)
     {
         UserId = userId;
         CreatedDate = createdDate;
